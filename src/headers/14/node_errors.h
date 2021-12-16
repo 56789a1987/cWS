@@ -33,12 +33,14 @@ void OnFatalError(const char* location, const char* message);
   V(ERR_BUFFER_TOO_LARGE, Error)                                               \
   V(ERR_CONSTRUCT_CALL_REQUIRED, TypeError)                                    \
   V(ERR_CONSTRUCT_CALL_INVALID, TypeError)                                     \
+  V(ERR_CRYPTO_TIMING_SAFE_EQUAL_LENGTH, RangeError)                           \
   V(ERR_CRYPTO_UNKNOWN_CIPHER, Error)                                          \
   V(ERR_CRYPTO_UNKNOWN_DH_GROUP, Error)                                        \
   V(ERR_EXECUTION_ENVIRONMENT_NOT_AVAILABLE, Error)                            \
   V(ERR_INVALID_ARG_VALUE, TypeError)                                          \
   V(ERR_OSSL_EVP_INVALID_DIGEST, Error)                                        \
   V(ERR_INVALID_ARG_TYPE, TypeError)                                           \
+  V(ERR_INVALID_THIS, TypeError)                                               \
   V(ERR_INVALID_TRANSFER_OBJECT, TypeError)                                    \
   V(ERR_MEMORY_ALLOCATION_FAILED, Error)                                       \
   V(ERR_MESSAGE_TARGET_CONTEXT_UNAVAILABLE, Error)                             \
@@ -86,10 +88,13 @@ void OnFatalError(const char* location, const char* message);
     "Buffer is not available for the current Context")                         \
   V(ERR_CONSTRUCT_CALL_INVALID, "Constructor cannot be called")                \
   V(ERR_CONSTRUCT_CALL_REQUIRED, "Cannot call constructor without `new`")      \
+  V(ERR_CRYPTO_TIMING_SAFE_EQUAL_LENGTH,                                       \
+    "Input buffers must have the same byte length")                            \
   V(ERR_CRYPTO_UNKNOWN_CIPHER, "Unknown cipher")                               \
   V(ERR_CRYPTO_UNKNOWN_DH_GROUP, "Unknown DH group")                           \
   V(ERR_EXECUTION_ENVIRONMENT_NOT_AVAILABLE,                                   \
     "Context not associated with Node.js environment")                         \
+  V(ERR_INVALID_THIS, "Value of \"this\" is the wrong type")                   \
   V(ERR_INVALID_TRANSFER_OBJECT, "Found invalid object in transferList")       \
   V(ERR_MEMORY_ALLOCATION_FAILED, "Failed to allocate memory")                 \
   V(ERR_OSSL_EVP_INVALID_DIGEST, "Invalid digest used")                        \
