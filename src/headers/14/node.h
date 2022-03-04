@@ -336,7 +336,8 @@ class NODE_EXTERN MultiIsolatePlatform : public v8::Platform {
 enum IsolateSettingsFlags {
   MESSAGE_LISTENER_WITH_ERROR_LEVEL = 1 << 0,
   DETAILED_SOURCE_POSITIONS_FOR_PROFILING = 1 << 1,
-  SHOULD_NOT_SET_PROMISE_REJECTION_CALLBACK = 1 << 2
+  SHOULD_NOT_SET_PROMISE_REJECTION_CALLBACK = 1 << 2,
+  SHOULD_NOT_SET_PREPARE_STACK_TRACE_CALLBACK = 1 << 3
 };
 
 struct IsolateSettings {
@@ -423,7 +424,17 @@ enum Flags : uint64_t {
   kNoRegisterESMLoader = 1 << 3,
   // Set this flag to make Node.js track "raw" file descriptors, i.e. managed
   // by fs.open() and fs.close(), and close them during FreeEnvironment().
-  kTrackUnmanagedFds = 1 << 4
+  kTrackUnmanagedFds = 1 << 4,
+  // Set this flag to force hiding console windows when spawning child
+  // processes. This is usually used when embedding Node.js in GUI programs on
+  // Windows.
+  kHideConsoleWindows = 1 << 5,
+  // Set this flag to disable loading native addons via `process.dlopen`.
+  // This environment flag is especially important for worker threads
+  // so that a worker thread can't load a native addon even if `execArgv`
+  // is overwritten and `--no-addons` is not specified but was specified
+  // for this Environment instance.
+  kNoNativeAddons = 1 << 6
 };
 }  // namespace EnvironmentFlags
 
@@ -499,6 +510,8 @@ NODE_EXTERN void DefaultProcessExitHandler(Environment* env, int exit_code);
 
 // This may return nullptr if context is not associated with a Node instance.
 NODE_EXTERN Environment* GetCurrentEnvironment(v8::Local<v8::Context> context);
+NODE_EXTERN IsolateData* GetEnvironmentIsolateData(Environment* env);
+NODE_EXTERN ArrayBufferAllocator* GetArrayBufferAllocator(IsolateData* data);
 
 NODE_EXTERN void OnFatalError(const char* location, const char* message);
 NODE_EXTERN void PromiseRejectCallback(v8::PromiseRejectMessage message);
@@ -539,8 +552,19 @@ NODE_EXTERN void FreePlatform(MultiIsolatePlatform* platform);
 NODE_EXTERN v8::TracingController* GetTracingController();
 NODE_EXTERN void SetTracingController(v8::TracingController* controller);
 
-NODE_EXTERN void EmitBeforeExit(Environment* env);
-NODE_EXTERN int EmitExit(Environment* env);
+// Run `process.emit('beforeExit')` as it would usually happen when Node.js is
+// run in standalone mode.
+NODE_EXTERN v8::Maybe<bool> EmitProcessBeforeExit(Environment* env);
+NODE_DEPRECATED("Use Maybe version (EmitProcessBeforeExit) instead",
+    NODE_EXTERN void EmitBeforeExit(Environment* env));
+// Run `process.emit('exit')` as it would usually happen when Node.js is run
+// in standalone mode. The return value corresponds to the exit code.
+NODE_EXTERN v8::Maybe<int> EmitProcessExit(Environment* env);
+NODE_DEPRECATED("Use Maybe version (EmitProcessExit) instead",
+    NODE_EXTERN int EmitExit(Environment* env));
+
+// Runs hooks added through `AtExit()`. This is part of `FreeEnvironment()`,
+// so calling it manually is typically not necessary.
 NODE_EXTERN void RunAtExit(Environment* env);
 
 // This may return nullptr if the current v8::Context is not associated
@@ -650,7 +674,18 @@ inline void NODE_SET_PROTOTYPE_METHOD(v8::Local<v8::FunctionTemplate> recv,
 #define NODE_SET_PROTOTYPE_METHOD node::NODE_SET_PROTOTYPE_METHOD
 
 // BINARY is a deprecated alias of LATIN1.
-enum encoding {ASCII, UTF8, BASE64, UCS2, BINARY, HEX, BUFFER, LATIN1 = BINARY};
+// BASE64URL is not currently exposed to the JavaScript side.
+enum encoding {
+  ASCII,
+  UTF8,
+  BASE64,
+  UCS2,
+  BINARY,
+  HEX,
+  BUFFER,
+  BASE64URL,
+  LATIN1 = BINARY
+};
 
 NODE_EXTERN enum encoding ParseEncoding(
     v8::Isolate* isolate,
@@ -956,6 +991,9 @@ class InternalCallbackScope;
 class NODE_EXTERN CallbackScope {
  public:
   CallbackScope(v8::Isolate* isolate,
+                v8::Local<v8::Object> resource,
+                async_context asyncContext);
+  CallbackScope(Environment* env,
                 v8::Local<v8::Object> resource,
                 async_context asyncContext);
   ~CallbackScope();

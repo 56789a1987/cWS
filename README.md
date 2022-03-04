@@ -9,21 +9,23 @@
 
 ## Important Notes
 
-* **This project has been deprecated consider using latest version of uWebSockets**
+* **Consider using latest version of uWebSockets if you don't need ws compatibility.**
+
+* This repository is a fork of [ClusterWS/cWS](https://github.com/ClusterWS/cWS)
 
 * This repository is a fork of [uWebSockets v0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) therefore has two licence [MIT](https://github.com/ClusterWS/uWS/blob/master/LICENSE) and [ZLIB](https://github.com/ClusterWS/uWS/blob/master/src/LICENSE)
 * Consider using latest [uWebSockets](https://github.com/uNetworking/uWebSockets.js) version instead
-* You can support me through [Patreon](https://www.patreon.com/clusterws) and [PayPal](https://www.paypal.me/goriunov)
 
 ## Supported Node Versions (SSL)
 
 This table is true if you run ssl directly with `cws` (`Node.js`). In case if you use proxy for example `nginx`, `cws` can be run on bigger coverage.
 
-|  CWS Version | Node 10  | Node 11 | Node 12          |  Node 13  | Node 14 |
-|--------------|----------|---------|------------------|-----------|---------|
-| 3.0.0        | >=10.0   |    X    | >=12.16          | >=13.9    | >=14.5  |
-| 2.0.0        | >=10.0   |    X    | >=12.16          | >=13.9    |   X     |
-| 1.6.0        | >=10.0   | >=11.0  | >=12.0 & <12.16  | >=13.9    |   X     |
+|  CWS Version | Node 10  | Node 11 | Node 12          |  Node 13  | Node 14 | Node 16 |
+|--------------|----------|---------|------------------|-----------|---------|---------|
+| 4.0.1        |    X     |    X    | >=12.18          |     X     | >=14.19 | >=16.14 |
+| 3.0.0        | >=10.0   |    X    | >=12.16          | >=13.9    | >=14.5  |    X    |
+| 2.0.0        | >=10.0   |    X    | >=12.16          | >=13.9    |   X     |    X    |
+| 1.6.0        | >=10.0   | >=11.0  | >=12.0 & <12.16  | >=13.9    |   X     |    X    |
 
 ## Documentation
 

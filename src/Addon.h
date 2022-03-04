@@ -8,10 +8,6 @@
 #if NODE_MAJOR_VERSION>=10
 #define NODE_WANT_INTERNALS 1
 
-#if NODE_MAJOR_VERSION==10
-  #include "headers/10/tls_wrap.h"
-#endif
-
 #if NODE_MAJOR_VERSION==12
   #include "headers/12/tls_wrap.h"
   #include "headers/12/base_object-inl.h"

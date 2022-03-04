@@ -25,6 +25,7 @@ struct StreamWriteResult {
   int err;
   WriteWrap* wrap;
   size_t bytes;
+  BaseObjectPtr<AsyncWrap> wrap_obj;
 };
 
 using JSMethodFunction = void(const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -422,6 +423,10 @@ class SimpleShutdownWrap : public ShutdownWrap, public OtherBase {
   SET_NO_MEMORY_INFO()
   SET_MEMORY_INFO_NAME(SimpleShutdownWrap)
   SET_SELF_SIZE(SimpleShutdownWrap)
+
+  bool IsNotIndicativeOfMemoryLeakAtExit() const override {
+    return OtherBase::IsNotIndicativeOfMemoryLeakAtExit();
+  }
 };
 
 template <typename OtherBase>
@@ -435,6 +440,10 @@ class SimpleWriteWrap : public WriteWrap, public OtherBase {
   SET_NO_MEMORY_INFO()
   SET_MEMORY_INFO_NAME(SimpleWriteWrap)
   SET_SELF_SIZE(SimpleWriteWrap)
+
+  bool IsNotIndicativeOfMemoryLeakAtExit() const override {
+    return OtherBase::IsNotIndicativeOfMemoryLeakAtExit();
+  }
 };
 
 }  // namespace node
