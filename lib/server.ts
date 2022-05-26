@@ -47,7 +47,8 @@ export class WebSocketServer {
         'Content-Length': body.length,
         'Content-Type': 'text/plain'
       });
-      return res.end(body);
+      res.end(body);
+      return;
     });
 
     this.httpServer.on('upgrade', this.onUpgradeRequest = ((req: HTTP.IncomingMessage, socket: Socket): void => {
@@ -169,7 +170,8 @@ export class WebSocketServer {
   }
 
   private abortConnection(socket: Socket, code: number, message: string): void {
-    return socket.end(`HTTP/1.1 ${code} ${message}\r\n\r\n`);
+    socket.end(`HTTP/1.1 ${code} ${message}\r\n\r\n`);
+    return;
   }
 
   private upgradeConnection(req: HTTP.IncomingMessage, socket: Socket, cb?: (ws: WebSocket) => void): void {

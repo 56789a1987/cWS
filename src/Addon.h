@@ -23,6 +23,11 @@
   #include "headers/16/base_object-inl.h"
 #endif
 
+#if NODE_MAJOR_VERSION==18
+  #include "headers/18/crypto/crypto_tls.h"
+  #include "headers/18/base_object-inl.h"
+#endif
+
 using BaseObject = node::BaseObject;
 
 #if NODE_MAJOR_VERSION>=15
@@ -116,16 +121,27 @@ class NativeString {
       data = node::Buffer::Data(value);
       length = node::Buffer::Length(value);
     } else if (value->IsTypedArray()) {
-      Local<ArrayBufferView> arrayBufferView =
-          Local<ArrayBufferView>::Cast(value);
-      ArrayBuffer::Contents contents = arrayBufferView->Buffer()->GetContents();
-      length = contents.ByteLength();
-      data = (char *)contents.Data();
+      Local<ArrayBufferView> arrayBufferView = Local<ArrayBufferView>::Cast(value);
+      #if V8_MAJOR_VERSION >= 8
+        std::shared_ptr<BackingStore> backingStore = arrayBufferView->Buffer()->GetBackingStore();
+        length = backingStore -> ByteLength();
+        data = (char *)backingStore -> Data();
+      #else
+        ArrayBuffer::Contents contents = arrayBufferView->Buffer()->GetContents();
+        length = contents.ByteLength();
+        data = (char *)contents.Data();
+      #endif
     } else if (value->IsArrayBuffer()) {
       Local<ArrayBuffer> arrayBuffer = Local<ArrayBuffer>::Cast(value);
-      ArrayBuffer::Contents contents = arrayBuffer->GetContents();
-      length = contents.ByteLength();
-      data = (char *)contents.Data();
+      #if V8_MAJOR_VERSION >= 8
+        std::shared_ptr<BackingStore> backingStore = arrayBuffer->GetBackingStore();
+        length = backingStore -> ByteLength();
+        data = (char *)backingStore -> Data();
+      #else
+        ArrayBuffer::Contents contents = arrayBuffer->GetContents();
+        length = contents.ByteLength();
+        data = (char *)contents.Data();
+      #endif
     } else {
       static char empty[] = "";
       data = empty;
@@ -180,7 +196,13 @@ inline Local<Value> wrapMessage(const char *message, size_t length,
                                 cWS::OpCode opCode, Isolate *isolate) {
 
   if (opCode == cWS::OpCode::BINARY) {
-    return (Local<Value>)ArrayBuffer::New(isolate, (char *)message, length);
+    #if V8_MAJOR_VERSION >= 8
+      std::unique_ptr<BackingStore> backingStore =
+        ArrayBuffer::NewBackingStore((char *)message, length, BackingStore::EmptyDeleter, nullptr);
+      return (Local<Value>)ArrayBuffer::New(isolate, std::move(backingStore));
+    #else
+      return (Local<Value>)ArrayBuffer::New(isolate, (char *)message, length);
+    #endif
   }
 
   #if NODE_MAJOR_VERSION >= 13
