@@ -361,14 +361,12 @@ T* UncheckedRealloc(T* pointer, size_t n) {
 // As per spec realloc behaves like malloc if passed nullptr.
 template <typename T>
 inline T* UncheckedMalloc(size_t n) {
-  if (n == 0) n = 1;
   return UncheckedRealloc<T>(nullptr, n);
 }
 
 template <typename T>
 inline T* UncheckedCalloc(size_t n) {
-  if (n == 0) n = 1;
-  MultiplyWithOverflowCheck(sizeof(T), n);
+  if (MultiplyWithOverflowCheck(sizeof(T), n) == 0) return nullptr;
   return static_cast<T*>(calloc(n, sizeof(T)));
 }
 
@@ -537,8 +535,7 @@ void ArrayBufferViewContents<T, S>::Read(v8::Local<v8::ArrayBufferView> abv) {
   static_assert(sizeof(T) == 1, "Only supports one-byte data at the moment");
   length_ = abv->ByteLength();
   if (length_ > sizeof(stack_storage_) || abv->HasBuffer()) {
-    data_ = static_cast<T*>(abv->Buffer()->GetBackingStore()->Data()) +
-        abv->ByteOffset();
+    data_ = static_cast<T*>(abv->Buffer()->Data()) + abv->ByteOffset();
   } else {
     abv->CopyContents(stack_storage_, sizeof(stack_storage_));
     data_ = stack_storage_;
