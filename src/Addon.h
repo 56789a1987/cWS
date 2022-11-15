@@ -28,6 +28,11 @@
   #include "headers/18/base_object-inl.h"
 #endif
 
+#if NODE_MAJOR_VERSION==19
+  #include "headers/19/crypto/crypto_tls.h"
+  #include "headers/19/base_object-inl.h"
+#endif
+
 using BaseObject = node::BaseObject;
 
 #if NODE_MAJOR_VERSION>=15
@@ -124,8 +129,8 @@ class NativeString {
       Local<ArrayBufferView> arrayBufferView = Local<ArrayBufferView>::Cast(value);
       #if V8_MAJOR_VERSION >= 8
         std::shared_ptr<BackingStore> backingStore = arrayBufferView->Buffer()->GetBackingStore();
-        length = backingStore -> ByteLength();
-        data = (char *)backingStore -> Data();
+        length = backingStore->ByteLength();
+        data = (char *)backingStore->Data();
       #else
         ArrayBuffer::Contents contents = arrayBufferView->Buffer()->GetContents();
         length = contents.ByteLength();
@@ -135,8 +140,8 @@ class NativeString {
       Local<ArrayBuffer> arrayBuffer = Local<ArrayBuffer>::Cast(value);
       #if V8_MAJOR_VERSION >= 8
         std::shared_ptr<BackingStore> backingStore = arrayBuffer->GetBackingStore();
-        length = backingStore -> ByteLength();
-        data = (char *)backingStore -> Data();
+        length = backingStore->ByteLength();
+        data = (char *)backingStore->Data();
       #else
         ArrayBuffer::Contents contents = arrayBuffer->GetContents();
         length = contents.ByteLength();
