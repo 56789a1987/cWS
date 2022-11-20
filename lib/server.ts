@@ -3,13 +3,13 @@ import * as HTTPS from 'https';
 
 import { Socket } from 'net';
 import { WebSocket } from './client';
-import { ServerConfigs } from './index';
+import type { ServerConfigs, SocketServerEvents } from './index';
 import { native, noop, setupNative, APP_PING_CODE, PERMESSAGE_DEFLATE, SLIDING_DEFLATE_WINDOW, DEFAULT_PAYLOAD_LIMIT } from './shared';
 
 export class WebSocketServer {
   public upgradeCb: (ws: WebSocket) => void;
   public upgradeReq: HTTP.IncomingMessage;
-  public registeredEvents: any = {
+  public registeredEvents: SocketServerEvents = {
     close: noop,
     error: noop,
     connection: noop,
@@ -86,7 +86,7 @@ export class WebSocketServer {
         // created by cws, in case if server passed from the
         // user than user is responsible for listening for 'error' event
         // on passed http server
-        this.registeredEvents['error'](err);
+        this.registeredEvents.error(err);
       });
 
       this.httpServer.listen(this.options.port, this.options.host, cb);
@@ -104,9 +104,7 @@ export class WebSocketServer {
     };
   }
 
-  public on(event: 'error', listener: (err: Error) => void): void;
-  public on(event: 'connection', listener: (socket: WebSocket, req: HTTP.IncomingMessage) => void): void;
-  public on(event: 'connection', listener: (socket: WebSocket) => void): void;
+  public on<K extends keyof SocketServerEvents>(event: K, listener: SocketServerEvents[K]): void;
   public on(event: string, listener: (...args: any[]) => void): void {
     if (this.registeredEvents[event] === undefined) {
       console.warn(`cWS does not support '${event}' event`);
@@ -164,7 +162,7 @@ export class WebSocketServer {
     }
 
     setTimeout((): void => {
-      this.registeredEvents['close']();
+      this.registeredEvents.close();
       cb();
     }, 0);
   }

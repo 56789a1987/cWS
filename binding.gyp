@@ -15,7 +15,7 @@
                 'src/Socket.cpp'
             ],
             "include_dirs": [
-                'src/headers/<!(node -p "process.version.match(/^v(\\d+)/)[1]")'
+                'src/headers/<!@(node -p "process.version.match(/^v(\\d+)/)[1]")'
             ],
             'conditions': [
                 ['OS=="linux"', {

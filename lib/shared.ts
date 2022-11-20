@@ -32,7 +32,7 @@ export function setupNative(group: any, type: string, wsServer?: WebSocketServer
       if (wsServer.upgradeCb) {
         wsServer.upgradeCb(socket);
       } else {
-        wsServer.registeredEvents['connection'](socket, wsServer.upgradeReq);
+        wsServer.registeredEvents.connection(socket, wsServer.upgradeReq);
       }
 
       wsServer.upgradeCb = null;
@@ -42,26 +42,26 @@ export function setupNative(group: any, type: string, wsServer?: WebSocketServer
 
     const webSocket: WebSocket = native.getUserData(external);
     (webSocket as any).external = external;
-    webSocket.registeredEvents['open']();
+    webSocket.registeredEvents.open();
   });
 
   native[type].group.onPing(group, (message: string | Buffer, webSocket: WebSocket): void => {
-    webSocket.registeredEvents['ping'](message);
+    webSocket.registeredEvents.ping(message);
   });
 
   native[type].group.onPong(group, (message: string | Buffer, webSocket: WebSocket): void => {
-    webSocket.registeredEvents['pong'](message);
+    webSocket.registeredEvents.pong(message);
   });
 
   native[type].group.onMessage(group, (message: string | Buffer, webSocket: WebSocket): void => {
-    webSocket.registeredEvents['message'](message);
+    webSocket.registeredEvents.message(message);
   });
 
   native[type].group.onDisconnection(group, (newExternal: any, code: number, message: any, webSocket: WebSocket): void => {
     (webSocket as any).external = null;
 
     process.nextTick((): void => {
-      webSocket.registeredEvents['close'](code || 1005, message || '');
+      webSocket.registeredEvents.close(code || 1005, message || '');
     });
 
     native.clearUserData(newExternal);
@@ -70,10 +70,7 @@ export function setupNative(group: any, type: string, wsServer?: WebSocketServer
   if (type === 'client') {
     native[type].group.onError(group, (webSocket: WebSocket): void => {
       process.nextTick((): void => {
-        webSocket.registeredEvents['error']({
-          message: 'cWs client connection error',
-          stack: 'cWs client connection error'
-        });
+        webSocket.registeredEvents.error(new Error('cWs client connection error'));
       });
     });
   }

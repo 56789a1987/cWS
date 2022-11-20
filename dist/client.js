@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WebSocket = void 0;
 const server_1 = require("./server");
 const shared_1 = require("./shared");
 const clientGroup = shared_1.native.client.group.create(0, shared_1.DEFAULT_PAYLOAD_LIMIT);
@@ -8,8 +9,8 @@ class WebSocket {
     constructor(url, options = {}) {
         this.url = url;
         this.options = options;
-        this.OPEN = WebSocket.OPEN;
-        this.CLOSED = WebSocket.OPEN;
+        this.OPEN = 1;
+        this.CLOSED = 3;
         this.registeredEvents = {
             open: shared_1.noop,
             ping: shared_1.noop,
@@ -18,14 +19,15 @@ class WebSocket {
             close: shared_1.noop,
             message: shared_1.noop
         };
-        this.socketType = 'client';
+        let socketType = 'client';
         if (!this.url && this.options.external) {
-            this.socketType = 'server';
+            socketType = 'server';
             this.external = this.options.external;
         }
         else {
             shared_1.native.connect(clientGroup, url, this);
         }
+        this.socket = shared_1.native[socketType];
     }
     get _socket() {
         const address = this.external ? shared_1.native.getAddress(this.external) : new Array(3);
@@ -36,7 +38,7 @@ class WebSocket {
         };
     }
     get readyState() {
-        return this.external ? this.OPEN : this.CLOSED;
+        return this.external ? 1 : 3;
     }
     set onopen(listener) {
         this.on('open', listener);
@@ -72,7 +74,7 @@ class WebSocket {
             if (options && options.binary === true) {
                 opCode = shared_1.OPCODE_BINARY;
             }
-            shared_1.native[this.socketType].send(this.external, message, opCode, cb ? () => process.nextTick(cb) : null, options && options.compress);
+            this.socket.send(this.external, message, opCode, cb ? () => process.nextTick(cb) : null, options && options.compress);
         }
         else if (cb) {
             cb(new Error('Socket not connected'));
@@ -80,18 +82,18 @@ class WebSocket {
     }
     ping(message) {
         if (this.external) {
-            shared_1.native[this.socketType].send(this.external, message, shared_1.OPCODE_PING);
+            this.socket.send(this.external, message, shared_1.OPCODE_PING);
         }
     }
     close(code = 1000, reason) {
         if (this.external) {
-            shared_1.native[this.socketType].close(this.external, code, reason);
+            this.socket.close(this.external, code, reason);
             this.external = null;
         }
     }
     terminate() {
         if (this.external) {
-            shared_1.native[this.socketType].terminate(this.external);
+            this.socket.terminate(this.external);
             this.external = null;
         }
     }

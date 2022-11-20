@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setupNative = exports.native = exports.DEFAULT_PAYLOAD_LIMIT = exports.SLIDING_DEFLATE_WINDOW = exports.PERMESSAGE_DEFLATE = exports.APP_PING_CODE = exports.OPCODE_BINARY = exports.OPCODE_PING = exports.OPCODE_TEXT = exports.noop = void 0;
 const client_1 = require("./client");
 exports.noop = () => { };
 exports.OPCODE_TEXT = 1;
@@ -28,7 +29,7 @@ function setupNative(group, type, wsServer) {
                 wsServer.upgradeCb(socket);
             }
             else {
-                wsServer.registeredEvents['connection'](socket, wsServer.upgradeReq);
+                wsServer.registeredEvents.connection(socket, wsServer.upgradeReq);
             }
             wsServer.upgradeCb = null;
             wsServer.upgradeReq = null;
@@ -36,31 +37,28 @@ function setupNative(group, type, wsServer) {
         }
         const webSocket = exports.native.getUserData(external);
         webSocket.external = external;
-        webSocket.registeredEvents['open']();
+        webSocket.registeredEvents.open();
     });
     exports.native[type].group.onPing(group, (message, webSocket) => {
-        webSocket.registeredEvents['ping'](message);
+        webSocket.registeredEvents.ping(message);
     });
     exports.native[type].group.onPong(group, (message, webSocket) => {
-        webSocket.registeredEvents['pong'](message);
+        webSocket.registeredEvents.pong(message);
     });
     exports.native[type].group.onMessage(group, (message, webSocket) => {
-        webSocket.registeredEvents['message'](message);
+        webSocket.registeredEvents.message(message);
     });
     exports.native[type].group.onDisconnection(group, (newExternal, code, message, webSocket) => {
         webSocket.external = null;
         process.nextTick(() => {
-            webSocket.registeredEvents['close'](code || 1005, message || '');
+            webSocket.registeredEvents.close(code || 1005, message || '');
         });
         exports.native.clearUserData(newExternal);
     });
     if (type === 'client') {
         exports.native[type].group.onError(group, (webSocket) => {
             process.nextTick(() => {
-                webSocket.registeredEvents['error']({
-                    message: 'cWs client connection error',
-                    stack: 'cWs client connection error'
-                });
+                webSocket.registeredEvents.error(new Error('cWs client connection error'));
             });
         });
     }

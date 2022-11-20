@@ -1,18 +1,23 @@
 import { WebSocketServer } from './server';
-import { SocketAddress, ServerConfigs } from './index';
+import type { SocketAddress, ServerConfigs, SocketClientEvents } from './index';
 import { native, setupNative, noop, DEFAULT_PAYLOAD_LIMIT, OPCODE_PING, OPCODE_BINARY, OPCODE_TEXT } from './shared';
 
 const clientGroup: any = native.client.group.create(0, DEFAULT_PAYLOAD_LIMIT);
 setupNative(clientGroup, 'client');
 
+export const enum WebSocketState {
+  OPEN = 1,
+  CLOSED = 3
+}
+
 export class WebSocket {
-  public static OPEN: number = 1;
-  public static CLOSED: number = 3;
+  public static readonly OPEN: number = WebSocketState.OPEN;
+  public static readonly CLOSED: number = WebSocketState.CLOSED;
   public static Server: new (options: ServerConfigs, cb?: () => void) => WebSocketServer = WebSocketServer;
 
-  public OPEN: number = WebSocket.OPEN;
-  public CLOSED: number = WebSocket.OPEN;
-  public registeredEvents: any = {
+  public readonly OPEN: number = WebSocketState.OPEN;
+  public readonly CLOSED: number = WebSocketState.CLOSED;
+  public registeredEvents: SocketClientEvents = {
     open: noop,
     ping: noop,
     pong: noop,
@@ -22,15 +27,17 @@ export class WebSocket {
   };
 
   private external: any;
-  private socketType: string = 'client';
+  private socket: any;
 
   constructor(public url: string, private options: any = {}) {
-    if (!this.url && (this.options as any).external) {
-      this.socketType = 'server';
-      this.external = (this.options as any).external;
+    let socketType: string = 'client';
+    if (!this.url && this.options.external) {
+      socketType = 'server';
+      this.external = this.options.external;
     } else {
       native.connect(clientGroup, url, this);
     }
+    this.socket = native[socketType];
   }
 
   public get _socket(): SocketAddress {
@@ -43,7 +50,7 @@ export class WebSocket {
   }
 
   public get readyState(): number {
-    return this.external ? this.OPEN : this.CLOSED;
+    return this.external ? WebSocketState.OPEN : WebSocketState.CLOSED;
   }
 
   public set onopen(listener: () => void) {
@@ -62,12 +69,7 @@ export class WebSocket {
     this.on('message', listener);
   }
 
-  public on(event: 'open', listener: () => void): void;
-  public on(event: 'ping', listener: () => void): void;
-  public on(event: 'pong', listener: () => void): void;
-  public on(event: 'error', listener: (err: Error) => void): void;
-  public on(event: 'message', listener: (message: string | any) => void): void;
-  public on(event: 'close', listener: (code?: number, reason?: string) => void): void;
+  public on<K extends keyof SocketClientEvents>(event: K, listener: SocketClientEvents[K]): void;
   public on(event: string, listener: (...args: any[]) => void): void {
     if (this.registeredEvents[event] === undefined) {
       console.warn(`cWS does not support '${event}' event`);
@@ -98,7 +100,7 @@ export class WebSocket {
         opCode = OPCODE_BINARY;
       }
 
-      native[this.socketType].send(this.external, message, opCode, cb ? (): void => process.nextTick(cb) : null, options && options.compress);
+      this.socket.send(this.external, message, opCode, cb ? (): void => process.nextTick(cb) : null, options && options.compress);
     } else if (cb) {
       cb(new Error('Socket not connected'));
     }
@@ -106,20 +108,20 @@ export class WebSocket {
 
   public ping(message?: string | Buffer): void {
     if (this.external) {
-      native[this.socketType].send(this.external, message, OPCODE_PING);
+      this.socket.send(this.external, message, OPCODE_PING);
     }
   }
 
   public close(code: number = 1000, reason?: string): void {
     if (this.external) {
-      native[this.socketType].close(this.external, code, reason);
+      this.socket.close(this.external, code, reason);
       this.external = null;
     }
   }
 
   public terminate(): void {
     if (this.external) {
-      native[this.socketType].terminate(this.external);
+      this.socket.terminate(this.external);
       this.external = null;
     }
   }

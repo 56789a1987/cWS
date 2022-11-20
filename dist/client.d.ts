@@ -1,17 +1,21 @@
 /// <reference types="node" />
 import { WebSocketServer } from './server';
-import { SocketAddress, ServerConfigs } from './index';
+import type { SocketAddress, ServerConfigs, SocketClientEvents } from './index';
+export declare const enum WebSocketState {
+    OPEN = 1,
+    CLOSED = 3
+}
 export declare class WebSocket {
     url: string;
     private options;
-    static OPEN: number;
-    static CLOSED: number;
+    static readonly OPEN: number;
+    static readonly CLOSED: number;
     static Server: new (options: ServerConfigs, cb?: () => void) => WebSocketServer;
-    OPEN: number;
-    CLOSED: number;
-    registeredEvents: any;
+    readonly OPEN: number;
+    readonly CLOSED: number;
+    registeredEvents: SocketClientEvents;
     private external;
-    private socketType;
+    private socket;
     constructor(url: string, options?: any);
     get _socket(): SocketAddress;
     get readyState(): number;
@@ -19,12 +23,7 @@ export declare class WebSocket {
     set onclose(listener: (code?: number, reason?: string) => void);
     set onerror(listener: (err: Error) => void);
     set onmessage(listener: (message: string | any) => void);
-    on(event: 'open', listener: () => void): void;
-    on(event: 'ping', listener: () => void): void;
-    on(event: 'pong', listener: () => void): void;
-    on(event: 'error', listener: (err: Error) => void): void;
-    on(event: 'message', listener: (message: string | any) => void): void;
-    on(event: 'close', listener: (code?: number, reason?: string) => void): void;
+    on<K extends keyof SocketClientEvents>(event: K, listener: SocketClientEvents[K]): void;
     send(message: string | Buffer, options?: {
         binary?: boolean;
         compress?: boolean;
