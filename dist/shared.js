@@ -21,7 +21,8 @@ exports.native = (() => {
 })();
 function setupNative(group, type, wsServer) {
     exports.native.setNoop(exports.noop);
-    exports.native[type].group.onConnection(group, (external) => {
+    const _group = (type === 'server' ? exports.native.server : exports.native.client).group;
+    _group.onConnection(group, (external) => {
         if (type === 'server' && wsServer) {
             const socket = new client_1.WebSocket(null, { external });
             exports.native.setUserData(external, socket);
@@ -39,16 +40,16 @@ function setupNative(group, type, wsServer) {
         webSocket.external = external;
         webSocket.registeredEvents.open();
     });
-    exports.native[type].group.onPing(group, (message, webSocket) => {
+    _group.onPing(group, (message, webSocket) => {
         webSocket.registeredEvents.ping(message);
     });
-    exports.native[type].group.onPong(group, (message, webSocket) => {
+    _group.onPong(group, (message, webSocket) => {
         webSocket.registeredEvents.pong(message);
     });
-    exports.native[type].group.onMessage(group, (message, webSocket) => {
+    _group.onMessage(group, (message, webSocket) => {
         webSocket.registeredEvents.message(message);
     });
-    exports.native[type].group.onDisconnection(group, (newExternal, code, message, webSocket) => {
+    _group.onDisconnection(group, (newExternal, code, message, webSocket) => {
         webSocket.external = null;
         process.nextTick(() => {
             webSocket.registeredEvents.close(code || 1005, message || '');
@@ -56,7 +57,7 @@ function setupNative(group, type, wsServer) {
         exports.native.clearUserData(newExternal);
     });
     if (type === 'client') {
-        exports.native[type].group.onError(group, (webSocket) => {
+        _group.onError(group, (webSocket) => {
             process.nextTick(() => {
                 webSocket.registeredEvents.error(new Error('cWs client connection error'));
             });

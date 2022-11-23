@@ -5,7 +5,6 @@
 #include <uv.h>
 #include <cstring>
 
-#if NODE_MAJOR_VERSION>=10
 #define NODE_WANT_INTERNALS 1
 
 #if NODE_MAJOR_VERSION==12
@@ -57,36 +56,18 @@ public:
 
 // Fix windows not resolved symbol issue
 #if defined(_MSC_VER)
-  #if NODE_MAJOR_VERSION>10
-    [[noreturn]] void node::Assert(const node::AssertionInfo& info) {
-      char name[1024];
-      char title[1024] = "Node.js";
-      uv_get_process_title(title, sizeof(title));
-      snprintf(name, sizeof(name), "%s[%d]", title, uv_os_getpid());
-      fprintf(stderr, "%s: Assertion failed.\n", name);
-      fflush(stderr);
-      ABORT_NO_BACKTRACE();
-    }
-  #else
-    [[noreturn]] void node::Assert(const char* const (*args)[4]) {
-      auto filename = (*args)[0];
-      auto linenum = (*args)[1];
-      auto message = (*args)[2];
-      auto function = (*args)[3];
-      char name[1024];
-      char title[1024] = "Node.js";
-      uv_get_process_title(title, sizeof(title));
-      snprintf(name, sizeof(name), "%s[%d]", title, uv_os_getpid());
-      fprintf(stderr, "%s: %s:%s:%s%s Assertion `%s' failed.\n",
-              name, filename, linenum, function, *function ? ":" : "", message);
-      fflush(stderr);
-      ABORT_NO_BACKTRACE();
-    }
-  #endif
+  [[noreturn]] void node::Assert(const node::AssertionInfo& info) {
+    char name[1024];
+    char title[1024] = "Node.js";
+    uv_get_process_title(title, sizeof(title));
+    snprintf(name, sizeof(name), "%s[%d]", title, uv_os_getpid());
+    fprintf(stderr, "%s: Assertion failed.\n", name);
+    fflush(stderr);
+    ABORT_NO_BACKTRACE();
+  }
 #endif
 
- #undef NODE_WANT_INTERNALS
-#endif
+#undef NODE_WANT_INTERNALS
 
 using namespace std;
 using namespace v8;
@@ -128,7 +109,7 @@ class NativeString {
     } else if (value->IsTypedArray()) {
       Local<ArrayBufferView> arrayBufferView = Local<ArrayBufferView>::Cast(value);
       #if V8_MAJOR_VERSION >= 8
-        std::shared_ptr<BackingStore> backingStore = arrayBufferView->Buffer()->GetBackingStore();
+        shared_ptr<BackingStore> backingStore = arrayBufferView->Buffer()->GetBackingStore();
         length = backingStore->ByteLength();
         data = (char *)backingStore->Data();
       #else
@@ -139,7 +120,7 @@ class NativeString {
     } else if (value->IsArrayBuffer()) {
       Local<ArrayBuffer> arrayBuffer = Local<ArrayBuffer>::Cast(value);
       #if V8_MAJOR_VERSION >= 8
-        std::shared_ptr<BackingStore> backingStore = arrayBuffer->GetBackingStore();
+        shared_ptr<BackingStore> backingStore = arrayBuffer->GetBackingStore();
         length = backingStore->ByteLength();
         data = (char *)backingStore->Data();
       #else
@@ -202,9 +183,9 @@ inline Local<Value> wrapMessage(const char *message, size_t length,
 
   if (opCode == cWS::OpCode::BINARY) {
     #if V8_MAJOR_VERSION >= 8
-      std::unique_ptr<BackingStore> backingStore =
+      unique_ptr<BackingStore> backingStore =
         ArrayBuffer::NewBackingStore((char *)message, length, BackingStore::EmptyDeleter, nullptr);
-      return (Local<Value>)ArrayBuffer::New(isolate, std::move(backingStore));
+      return (Local<Value>)ArrayBuffer::New(isolate, move(backingStore));
     #else
       return (Local<Value>)ArrayBuffer::New(isolate, (char *)message, length);
     #endif

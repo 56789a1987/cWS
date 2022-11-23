@@ -30,14 +30,13 @@ export class WebSocket {
   private socket: any;
 
   constructor(public url: string, private options: any = {}) {
-    let socketType: string = 'client';
     if (!this.url && this.options.external) {
-      socketType = 'server';
+      this.socket = native.server;
       this.external = this.options.external;
     } else {
+      this.socket = native.client;
       native.connect(clientGroup, url, this);
     }
-    this.socket = native[socketType];
   }
 
   public get _socket(): SocketAddress {

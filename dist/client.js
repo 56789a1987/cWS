@@ -19,15 +19,14 @@ class WebSocket {
             close: shared_1.noop,
             message: shared_1.noop
         };
-        let socketType = 'client';
         if (!this.url && this.options.external) {
-            socketType = 'server';
+            this.socket = shared_1.native.server;
             this.external = this.options.external;
         }
         else {
+            this.socket = shared_1.native.client;
             shared_1.native.connect(clientGroup, url, this);
         }
-        this.socket = shared_1.native[socketType];
     }
     get _socket() {
         const address = this.external ? shared_1.native.getAddress(this.external) : new Array(3);
