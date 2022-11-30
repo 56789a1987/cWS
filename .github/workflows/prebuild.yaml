@@ -1,0 +1,186 @@
+# Triggering prebuilds:
+# 1. Create a draft release manually using the GitHub UI.
+# 2. Set the `jobs.*.strategy.matrix.node` arrays to the set of Node.js versions
+#    to build for.
+# 3. Set the `jobs.*.strategy.matrix.tag` arrays to the set of releases
+#    tags to build.
+# 4. Commit and push this file to master.
+# 5. In the Actions tab, navigate to the "Make Prebuilds" workflow and click
+#    "Run workflow".
+# 6. Once the builds succeed, promote the draft release to a full release.
+
+name: Make Prebuilds
+on: workflow_dispatch
+
+jobs:
+  Linux:
+    strategy:
+      matrix:
+        node: [12, 14, 16, 18, 19]
+        tag: ["v4.2.2"]
+    name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Linux
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TAG: ${{ matrix.tag }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          node -p "'NODE_ABI=' + process.versions.modules" >> $GITHUB_ENV
+          npm install -g node-gyp
+          npm install --ignore-scripts --legacy-peer-deps
+          node-gyp rebuild
+
+      - name: Test binary
+        run: npm run test || exit 0
+
+      - name: Upload
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            const fs = require("fs");
+            const assetName = "cws_linux_${{ env.NODE_ABI }}.node";
+            const assetPath = "build/Release/cws.node";
+            const tagName = process.env.BUILD_TAG;
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+            const releases = await github.repos.listReleases({ owner, repo });
+            const release = releases.data.find(r => r.tag_name === tagName);
+            if (!release) {
+              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+            }
+
+            const oldAsset = release.assets.find(a => a.name === assetName);
+            if (oldAsset) {
+              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
+            }
+
+            await github.repos.uploadReleaseAsset({
+              url: release.upload_url,
+              headers: {
+                "content-type": "application/x-executable",
+                "content-length": `${fs.statSync(assetPath).size}`
+              },
+              name: assetName,
+              data: fs.readFileSync(assetPath)
+            });
+
+  MacOS:
+    strategy:
+      matrix:
+        node: [12, 14, 16, 18, 19]
+        tag: ["v4.2.2"]
+    name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS
+    runs-on: macos-latest
+    env:
+      BUILD_TAG: ${{ matrix.tag }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          node -p "'NODE_ABI=' + process.versions.modules" >> $GITHUB_ENV
+          npm install -g node-gyp
+          npm install --ignore-scripts --legacy-peer-deps
+          node-gyp rebuild
+
+      - name: Test binary
+        run: npm run test || exit 0
+
+      - name: Upload
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            const fs = require("fs");
+            const assetName = "cws_darwin_${{ env.NODE_ABI }}.node";
+            const assetPath = "build/Release/cws.node";
+            const tagName = process.env.BUILD_TAG;
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+            const releases = await github.repos.listReleases({ owner, repo });
+            const release = releases.data.find(r => r.tag_name === tagName);
+            if (!release) {
+              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+            }
+
+            const oldAsset = release.assets.find(a => a.name === assetName);
+            if (oldAsset) {
+              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
+            }
+
+            await github.repos.uploadReleaseAsset({
+              url: release.upload_url,
+              headers: {
+                "content-type": "application/x-executable",
+                "content-length": `${fs.statSync(assetPath).size}`
+              },
+              name: assetName,
+              data: fs.readFileSync(assetPath)
+            });
+
+  Win:
+    strategy:
+      matrix:
+        node: [12, 14, 16, 18, 19]
+        tag: ["v4.2.2"]
+    name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Windows
+    runs-on: windows-latest
+    env:
+      BUILD_TAG: ${{ matrix.tag }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          node -p "'NODE_ABI=' + process.versions.modules" | Out-File -FilePath $env:GITHUB_ENV -Append
+          npm install -g node-gyp
+          npm install --ignore-scripts --legacy-peer-deps
+          node-gyp rebuild
+
+      - name: Test binary
+        run: |
+          cmd /c "npm run test || exit 0"
+
+      - name: Upload
+        uses: actions/github-script@0.9.0
+        with:
+          script: |
+            const fs = require("fs");
+            const assetName = "cws_win32_${{ env.NODE_ABI }}.node";
+            const assetPath = "build/Release/cws.node";
+            const tagName = process.env.BUILD_TAG;
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+
+            const releases = await github.repos.listReleases({ owner, repo });
+            const release = releases.data.find(r => r.tag_name === tagName);
+            if (!release) {
+              throw new Error(`Tag ${tagName} not found. Did you make the GitHub release?`);
+            }
+
+            const oldAsset = release.assets.find(a => a.name === assetName);
+            if (oldAsset) {
+              await github.repos.deleteReleaseAsset({ owner, repo, asset_id: oldAsset.id });
+            }
+
+            await github.repos.uploadReleaseAsset({
+              url: release.upload_url,
+              headers: {
+                "content-type": "application/x-executable",
+                "content-length": `${fs.statSync(assetPath).size}`
+              },
+              name: assetName,
+              data: fs.readFileSync(assetPath)
+            });
