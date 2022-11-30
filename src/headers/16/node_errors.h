@@ -21,6 +21,7 @@ void AppendExceptionLine(Environment* env,
 
 [[noreturn]] void FatalError(const char* location, const char* message);
 void OnFatalError(const char* location, const char* message);
+void OOMErrorHandler(const char* location, bool is_heap_oom);
 
 // Helpers to construct errors similar to the ones provided by
 // lib/internal/errors.js.
@@ -269,6 +270,11 @@ void PerIsolateMessageListener(v8::Local<v8::Message> message,
 void DecorateErrorStack(Environment* env,
                         const errors::TryCatchScope& try_catch);
 }  // namespace errors
+
+v8::ModifyCodeGenerationFromStringsResult ModifyCodeGenerationFromStrings(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Value> source,
+    bool is_code_like);
 
 }  // namespace node
 

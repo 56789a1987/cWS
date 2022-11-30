@@ -3,8 +3,9 @@
 
 #if defined(NODE_WANT_INTERNALS) && NODE_WANT_INTERNALS
 
-// FIXME(joyeecheung): nghttp2.h needs stdint.h to compile on Windows
-#include <cstdint>
+// clang-format off
+#include "node.h"  // nghttp2.h needs ssize_t
+// clang-format on
 #include "nghttp2/nghttp2.h"
 
 #include "env.h"
@@ -401,6 +402,10 @@ class Http2Stream : public AsyncWrap,
     size_t i = 0;
     for (const auto& header : current_headers_ )
       fn(header, i++);
+    ClearHeaders();
+  }
+
+  void ClearHeaders() {
     current_headers_.clear();
   }
 
@@ -786,6 +791,8 @@ class Http2Session : public AsyncWrap,
   void HandlePingFrame(const nghttp2_frame* frame);
   void HandleAltSvcFrame(const nghttp2_frame* frame);
   void HandleOriginFrame(const nghttp2_frame* frame);
+
+  void DecrefHeaders(const nghttp2_frame* frame);
 
   // nghttp2 callbacks
   static int OnBeginHeadersCallback(

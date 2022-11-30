@@ -38,14 +38,16 @@ namespace worker {
 class TransferData;
 }
 
+extern uint16_t kNodeEmbedderId;
+
 class BaseObject : public MemoryRetainer {
  public:
-  enum InternalFields { kSlot, kInternalFieldCount };
+  enum InternalFields { kEmbedderType, kSlot, kInternalFieldCount };
 
-  // Associates this object with `object`. It uses the 0th internal field for
+  // Associates this object with `object`. It uses the 1st internal field for
   // that, and in particular aborts if there is no such field.
-  inline BaseObject(Environment* env, v8::Local<v8::Object> object);
-  inline ~BaseObject() override;
+  BaseObject(Environment* env, v8::Local<v8::Object> object);
+  ~BaseObject() override;
 
   BaseObject() = delete;
 
@@ -65,7 +67,7 @@ class BaseObject : public MemoryRetainer {
   // was also passed to the `BaseObject()` constructor initially.
   // This may return `nullptr` if the C++ object has not been constructed yet,
   // e.g. when the JS object used `MakeLazilyInitializedJSTemplate`.
-  static inline void LazilyInitializedJSTemplateConstructor(
+  static void LazilyInitializedJSTemplateConstructor(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static inline BaseObject* FromJSObject(v8::Local<v8::Value> object);
   template <typename T>
@@ -74,7 +76,7 @@ class BaseObject : public MemoryRetainer {
   // Make the `v8::Global` a weak reference and, `delete` this object once
   // the JS object has been garbage collected and there are no (strong)
   // BaseObjectPtr references to it.
-  inline void MakeWeak();
+  void MakeWeak();
 
   // Undo `MakeWeak()`, i.e. turn this into a strong reference that is a GC
   // root and will not be touched by the garbage collector.
@@ -88,7 +90,7 @@ class BaseObject : public MemoryRetainer {
   // Utility to create a FunctionTemplate with one internal field (used for
   // the `BaseObject*` pointer) and a constructor that initializes that field
   // to `nullptr`.
-  static inline v8::Local<v8::FunctionTemplate> MakeLazilyInitializedJSTemplate(
+  static v8::Local<v8::FunctionTemplate> MakeLazilyInitializedJSTemplate(
       Environment* env);
 
   // Setter/Getter pair for internal fields that can be passed to SetAccessor.
@@ -171,7 +173,7 @@ class BaseObject : public MemoryRetainer {
   // class because it is used by src/node_postmortem_metadata.cc to calculate
   // offsets and generate debug symbols for BaseObject, which assumes that the
   // position of members in memory are predictable. For more information please
-  // refer to `doc/guides/node-postmortem-support.md`
+  // refer to `doc/contributing/node-postmortem-support.md`
   friend int GenDebugSymbols();
   friend class CleanupHookCallback;
   template <typename T, bool kIsWeak>
@@ -202,11 +204,11 @@ class BaseObject : public MemoryRetainer {
   inline bool has_pointer_data() const;
   // This creates a PointerData struct if none was associated with this
   // BaseObject before.
-  inline PointerData* pointer_data();
+  PointerData* pointer_data();
 
   // Functions that adjust the strong pointer count.
-  inline void decrease_refcount();
-  inline void increase_refcount();
+  void decrease_refcount();
+  void increase_refcount();
 
   Environment* env_;
   PointerData* pointer_data_ = nullptr;

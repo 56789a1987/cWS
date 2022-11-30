@@ -12,6 +12,7 @@ namespace node {
 class Environment;
 struct EnvSerializeInfo;
 struct SnapshotData;
+class ExternalReferenceRegistry;
 
 #define SERIALIZABLE_OBJECT_TYPES(V)                                           \
   V(fs_binding_data, fs::BindingData)                                          \
@@ -29,11 +30,6 @@ enum class EmbedderObjectType : uint8_t {
 // When serializing an embedder object, we'll serialize the native states
 // into a chunk that can be mapped into a subclass of InternalFieldInfo,
 // and pass it into the V8 callback as the payload of StartupData.
-// TODO(joyeecheung): the classification of types seem to be wrong.
-// We'd need a type for each field of each class of native object.
-// Maybe it's fine - we'll just use the type to invoke BaseObject constructors
-// and specify that the BaseObject has only one field for us to serialize.
-// And for non-BaseObject embedder objects, we'll use field-wise types.
 // The memory chunk looks like this:
 //
 // [   type   ] - EmbedderObjectType (a uint8_t)
@@ -122,15 +118,6 @@ void SerializeBindingData(Environment* env,
                           EnvSerializeInfo* info);
 
 bool IsSnapshotableType(FastStringKey key);
-
-class SnapshotBuilder {
- public:
-  static std::string Generate(const std::vector<std::string> args,
-                              const std::vector<std::string> exec_args);
-  static void Generate(SnapshotData* out,
-                       const std::vector<std::string> args,
-                       const std::vector<std::string> exec_args);
-};
 }  // namespace node
 
 #endif  // defined(NODE_WANT_INTERNALS) && NODE_WANT_INTERNALS

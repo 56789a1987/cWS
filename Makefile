@@ -3,9 +3,9 @@ CPP_OSX := -stdlib=libc++ -mmacosx-version-min=10.7 -undefined dynamic_lookup
 
 VER_72  := v12.18.2
 VER_83  := v14.19.0
-VER_93  := v16.14.0
+VER_93  := v16.18.0
 VER_108 := v18.12.0
-VER_111 := v19.1.0
+VER_111 := v19.2.0
 
 default:
 	make targets

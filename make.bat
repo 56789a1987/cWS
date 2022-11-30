@@ -3,9 +3,9 @@ call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build
 
 set v72=v12.18.2
 set v83=v14.19.0
-set v93=v16.14.0
+set v93=v16.18.0
 set v108=v18.12.0
-set v111=v19.1.0
+set v111=v19.2.0
 
 if not exist targets (
   mkdir targets

@@ -32,6 +32,16 @@
 # define NODE_EXTERN __attribute__((visibility("default")))
 #endif
 
+// Declarations annotated with NODE_EXTERN_PRIVATE do not form part of
+// the public API. They are implementation details that can and will
+// change between releases, even in semver patch releases. Do not use
+// any such symbol in external code.
+#ifdef NODE_SHARED_MODE
+#define NODE_EXTERN_PRIVATE NODE_EXTERN
+#else
+#define NODE_EXTERN_PRIVATE
+#endif
+
 #ifdef BUILDING_NODE_EXTENSION
 # undef BUILDING_V8_SHARED
 # undef BUILDING_UV_SHARED
@@ -65,8 +75,9 @@
 #include "v8-platform.h"  // NOLINT(build/include_order)
 #include "node_version.h"  // NODE_MODULE_VERSION
 
-#include <memory>
 #include <functional>
+#include <memory>
+#include <ostream>
 
 // We cannot use __POSIX__ in this header because that's only defined when
 // building Node.js.
@@ -438,7 +449,12 @@ enum Flags : uint64_t {
   // $HOME/.node_modules and $NODE_PATH. This is used by standalone apps that
   // do not expect to have their behaviors changed because of globally
   // installed modules.
-  kNoGlobalSearchPaths = 1 << 7
+  kNoGlobalSearchPaths = 1 << 7,
+  // Controls whether or not the Environment should call V8Inspector::create().
+  // This control is needed by embedders who may not want to initialize the V8
+  // inspector in situations where one has already been created,
+  // e.g. Blink's in Chromium.
+  kNoCreateInspector = 1 << 9
 };
 }  // namespace EnvironmentFlags
 
@@ -512,6 +528,33 @@ NODE_EXTERN v8::MaybeLocal<v8::Value> PrepareStackTraceCallback(
     v8::Local<v8::Context> context,
     v8::Local<v8::Value> exception,
     v8::Local<v8::Array> trace);
+
+// Writes a diagnostic report to a file. If filename is not provided, the
+// default filename includes the date, time, PID, and a sequence number.
+// The report's JavaScript stack trace is taken from err, if present.
+// If isolate is nullptr, no information about the JavaScript environment
+// is included in the report.
+// Returns the filename of the written report.
+NODE_EXTERN std::string TriggerNodeReport(v8::Isolate* isolate,
+                                          const char* message,
+                                          const char* trigger,
+                                          const std::string& filename,
+                                          v8::Local<v8::Value> error);
+NODE_EXTERN std::string TriggerNodeReport(Environment* env,
+                                          const char* message,
+                                          const char* trigger,
+                                          const std::string& filename,
+                                          v8::Local<v8::Value> error);
+NODE_EXTERN void GetNodeReport(v8::Isolate* isolate,
+                               const char* message,
+                               const char* trigger,
+                               v8::Local<v8::Value> error,
+                               std::ostream& out);
+NODE_EXTERN void GetNodeReport(Environment* env,
+                               const char* message,
+                               const char* trigger,
+                               v8::Local<v8::Value> error,
+                               std::ostream& out);
 
 // This returns the MultiIsolatePlatform used for an Environment or IsolateData
 // instance, if one exists.
@@ -819,11 +862,13 @@ extern "C" NODE_EXTERN void node_module_register(void* mod);
 #endif
 
 #if defined(_MSC_VER)
-#pragma section(".CRT$XCU", read)
 #define NODE_C_CTOR(fn)                                               \
   NODE_CTOR_PREFIX void __cdecl fn(void);                             \
-  __declspec(dllexport, allocate(".CRT$XCU"))                         \
-      void (__cdecl*fn ## _)(void) = fn;                              \
+  namespace {                                                         \
+  struct fn##_ {                                                      \
+    fn##_() { fn(); };                                                \
+  } fn##_v_;                                                          \
+  }                                                                   \
   NODE_CTOR_PREFIX void __cdecl fn(void)
 #else
 #define NODE_C_CTOR(fn)                                               \
@@ -981,6 +1026,15 @@ NODE_EXTERN void RemoveEnvironmentCleanupHookInternal(ACHHandle* holder);
 inline void RemoveEnvironmentCleanupHook(AsyncCleanupHookHandle holder) {
   RemoveEnvironmentCleanupHookInternal(holder.get());
 }
+
+// This behaves like V8's Isolate::RequestInterrupt(), but also wakes up
+// the event loop if it is currently idle. Interrupt requests are drained
+// in `FreeEnvironment()`. The passed callback can not call back into
+// JavaScript.
+// This function can be called from any thread.
+NODE_EXTERN void RequestInterrupt(Environment* env,
+                                  void (*fun)(void* arg),
+                                  void* arg);
 
 /* Returns the id of the current execution context. If the return value is
  * zero then no execution has been set. This will happen if the user handles
