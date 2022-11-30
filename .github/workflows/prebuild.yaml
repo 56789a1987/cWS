@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         node: [12, 14, 16, 18, 19]
-        tag: ["v4.2.2"]
+        tag: ["v4.3.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     env:
@@ -37,7 +37,7 @@ jobs:
           node-gyp rebuild
 
       - name: Test binary
-        run: npm run test || exit 0
+        run: npm run test || echo "::warning::Test binary failed" && exit 0
 
       - name: Upload
         uses: actions/github-script@0.9.0
@@ -74,7 +74,7 @@ jobs:
     strategy:
       matrix:
         node: [12, 14, 16, 18, 19]
-        tag: ["v4.2.2"]
+        tag: ["v4.3.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS
     runs-on: macos-latest
     env:
@@ -94,7 +94,7 @@ jobs:
           node-gyp rebuild
 
       - name: Test binary
-        run: npm run test || exit 0
+        run: npm run test || echo "::warning::Test binary failed" && exit 0
 
       - name: Upload
         uses: actions/github-script@0.9.0
@@ -131,7 +131,7 @@ jobs:
     strategy:
       matrix:
         node: [12, 14, 16, 18, 19]
-        tag: ["v4.2.2"]
+        tag: ["v4.3.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
@@ -152,7 +152,7 @@ jobs:
 
       - name: Test binary
         run: |
-          cmd /c "npm run test || exit 0"
+          cmd /c "npm run test || echo ::warning::Test binary failed && exit 0"
 
       - name: Upload
         uses: actions/github-script@0.9.0
