@@ -4,11 +4,14 @@ import { readFileSync } from 'fs';
 import { connect as tlsConnect } from 'tls';
 import { createServer, Server } from 'http';
 import { createServer as createServerHttps, Server as HttpsServer } from 'https';
+// import { registerHandler } from 'segfault-handler';
 
 import { WebSocket, WebSocketServer, secureProtocol } from '../lib';
 
 const serverPort: number = 3000;
 const secureServerPort: number = 3001;
+
+// registerHandler("crash_log.txt");
 
 async function createWSServer(ssl: boolean, server?: Server | HttpsServer): Promise<WebSocketServer> {
   return new Promise((res: any): void => {
