@@ -8,26 +8,31 @@
 #define NODE_WANT_INTERNALS 1
 
 #if NODE_MAJOR_VERSION==12
+  #include "headers/12/tcp_wrap.h"
   #include "headers/12/tls_wrap.h"
   #include "headers/12/base_object-inl.h"
 #endif
 
 #if NODE_MAJOR_VERSION==14
+  #include "headers/14/tcp_wrap.h"
   #include "headers/14/tls_wrap.h"
   #include "headers/14/base_object-inl.h"
 #endif
 
 #if NODE_MAJOR_VERSION==16
+  #include "headers/16/tcp_wrap.h"
   #include "headers/16/crypto/crypto_tls.h"
   #include "headers/16/base_object-inl.h"
 #endif
 
 #if NODE_MAJOR_VERSION==18
+  #include "headers/18/tcp_wrap.h"
   #include "headers/18/crypto/crypto_tls.h"
   #include "headers/18/base_object-inl.h"
 #endif
 
 #if NODE_MAJOR_VERSION==19
+  #include "headers/19/tcp_wrap.h"
   #include "headers/19/crypto/crypto_tls.h"
   #include "headers/19/base_object-inl.h"
 #endif
@@ -252,15 +257,19 @@ void getAddress(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(array);
 }
 
-uv_handle_t *getTcpHandle(void *handleWrap) {
-  volatile char *memory = (volatile char *)handleWrap;
-  for (volatile uv_handle_t *tcpHandle = (volatile uv_handle_t *)memory;
-       tcpHandle->type != UV_TCP || tcpHandle->data != handleWrap ||
-       tcpHandle->loop != uv_default_loop();
-       tcpHandle = (volatile uv_handle_t *)memory) {
-    memory++;
+uv_handle_t *getTcpHandle(Local<Object> object) {
+  node::TCPWrap* wrap;
+  uv_handle_t *handle;
+
+  for (uint8_t i = 0; i < 0xff; i++) {
+    wrap = (node::TCPWrap *)(object->GetAlignedPointerFromInternalField(i));
+    handle = (uv_handle_t *)&wrap->handle_;
+    if (handle->type == UV_TCP && handle->data == wrap && handle->loop == uv_default_loop()) {
+      return handle;
+    }
   }
-  return (uv_handle_t *)memory;
+
+  return nullptr;
 }
 
 struct SendCallbackData {
@@ -347,10 +356,8 @@ void transfer(const FunctionCallbackInfo<Value> &args) {
   if (args[0]->IsObject()) {
     Isolate* isolate = args.GetIsolate();
     Local<Context> context = isolate->GetCurrentContext();
-
-    uv_fileno((handle = getTcpHandle(
-                   args[0]->ToObject(context).ToLocalChecked()->GetAlignedPointerFromInternalField(0))),
-              (uv_os_fd_t *)&ticket->fd);
+    handle = getTcpHandle(args[0]->ToObject(context).ToLocalChecked());
+    uv_fileno(handle, (uv_os_fd_t *)&ticket->fd);
   } else {
     ticket->fd = args[0].As<Integer>()->Value();
   }
