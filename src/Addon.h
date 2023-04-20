@@ -25,12 +25,6 @@
   #include "headers/18/base_object-inl.h"
 #endif
 
-#if NODE_MAJOR_VERSION==19
-  #include "headers/19/tcp_wrap.h"
-  #include "headers/19/crypto/crypto_tls.h"
-  #include "headers/19/base_object-inl.h"
-#endif
-
 using BaseObject = node::BaseObject;
 
 #if NODE_MAJOR_VERSION>=15
