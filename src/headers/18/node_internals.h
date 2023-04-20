@@ -83,6 +83,9 @@ void PrintStackTrace(v8::Isolate* isolate, v8::Local<v8::StackTrace> stack);
 void PrintCaughtException(v8::Isolate* isolate,
                           v8::Local<v8::Context> context,
                           const v8::TryCatch& try_catch);
+std::string FormatCaughtException(v8::Isolate* isolate,
+                                  v8::Local<v8::Context> context,
+                                  const v8::TryCatch& try_catch);
 
 void ResetStdio();  // Safe to call more than once and from signal handlers.
 #ifdef __POSIX__
@@ -258,7 +261,8 @@ class DebugSealHandleScope {
 
 class ThreadPoolWork {
  public:
-  explicit inline ThreadPoolWork(Environment* env) : env_(env) {
+  explicit inline ThreadPoolWork(Environment* env, const char* type)
+      : env_(env), type_(type) {
     CHECK_NOT_NULL(env);
   }
   inline virtual ~ThreadPoolWork() = default;
@@ -274,6 +278,7 @@ class ThreadPoolWork {
  private:
   Environment* env_;
   uv_work_t work_req_;
+  const char* type_;
 };
 
 #define TRACING_CATEGORY_NODE "node"
@@ -301,16 +306,13 @@ bool SafeGetenv(const char* key,
 void DefineZlibConstants(v8::Local<v8::Object> target);
 v8::Isolate* NewIsolate(v8::Isolate::CreateParams* params,
                         uv_loop_t* event_loop,
-                        MultiIsolatePlatform* platform);
+                        MultiIsolatePlatform* platform,
+                        bool has_snapshot_data = false);
 // This overload automatically picks the right 'main_script_id' if no callback
 // was provided by the embedder.
 v8::MaybeLocal<v8::Value> StartExecution(Environment* env,
                                          StartExecutionCallback cb = nullptr);
 v8::MaybeLocal<v8::Object> GetPerContextExports(v8::Local<v8::Context> context);
-v8::MaybeLocal<v8::Value> ExecuteBootstrapper(
-    Environment* env,
-    const char* id,
-    std::vector<v8::Local<v8::Value>>* arguments);
 void MarkBootstrapComplete(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 class InitializationResultImpl final : public InitializationResult {
@@ -416,6 +418,7 @@ std::ostream& operator<<(std::ostream& output,
                          const TickInfo::SerializeInfo& d);
 std::ostream& operator<<(std::ostream& output,
                          const AsyncHooks::SerializeInfo& d);
+std::ostream& operator<<(std::ostream& output, const SnapshotMetadata& d);
 
 namespace performance {
 std::ostream& operator<<(std::ostream& output,

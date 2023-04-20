@@ -153,6 +153,7 @@ NAPI_EXTERN napi_status NAPI_CDECL napi_create_buffer(napi_env env,
                                                       size_t length,
                                                       void** data,
                                                       napi_value* result);
+#ifndef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
 NAPI_EXTERN napi_status NAPI_CDECL
 napi_create_external_buffer(napi_env env,
                             size_t length,
@@ -160,6 +161,7 @@ napi_create_external_buffer(napi_env env,
                             napi_finalize finalize_cb,
                             void* finalize_hint,
                             napi_value* result);
+#endif  // NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
 NAPI_EXTERN napi_status NAPI_CDECL napi_create_buffer_copy(napi_env env,
                                                            size_t length,
                                                            const void* data,
@@ -173,6 +175,7 @@ NAPI_EXTERN napi_status NAPI_CDECL napi_get_buffer_info(napi_env env,
                                                         void** data,
                                                         size_t* length);
 
+#ifndef __wasm32__
 // Methods to manage simple async operations
 NAPI_EXTERN napi_status NAPI_CDECL
 napi_create_async_work(napi_env env,
@@ -188,6 +191,7 @@ NAPI_EXTERN napi_status NAPI_CDECL napi_queue_async_work(napi_env env,
                                                          napi_async_work work);
 NAPI_EXTERN napi_status NAPI_CDECL napi_cancel_async_work(napi_env env,
                                                           napi_async_work work);
+#endif  // __wasm32__
 
 // version management
 NAPI_EXTERN napi_status NAPI_CDECL
@@ -206,11 +210,11 @@ napi_get_uv_event_loop(napi_env env, struct uv_loop_s** loop);
 NAPI_EXTERN napi_status NAPI_CDECL napi_fatal_exception(napi_env env,
                                                         napi_value err);
 
-NAPI_EXTERN napi_status NAPI_CDECL napi_add_env_cleanup_hook(
-    napi_env env, void(NAPI_CDECL* fun)(void* arg), void* arg);
+NAPI_EXTERN napi_status NAPI_CDECL
+napi_add_env_cleanup_hook(napi_env env, napi_cleanup_hook fun, void* arg);
 
-NAPI_EXTERN napi_status NAPI_CDECL napi_remove_env_cleanup_hook(
-    napi_env env, void(NAPI_CDECL* fun)(void* arg), void* arg);
+NAPI_EXTERN napi_status NAPI_CDECL
+napi_remove_env_cleanup_hook(napi_env env, napi_cleanup_hook fun, void* arg);
 
 NAPI_EXTERN napi_status NAPI_CDECL
 napi_open_callback_scope(napi_env env,

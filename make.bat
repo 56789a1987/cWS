@@ -1,9 +1,9 @@
 REM Fix this path !!!
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
 
-set v83=v14.19.0
-set v93=v16.18.0
-set v108=v18.12.0
+set v83=v14.21.3
+set v93=v16.20.0
+set v108=v18.16.0
 
 if not exist targets (
   mkdir targets

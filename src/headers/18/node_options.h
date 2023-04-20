@@ -50,7 +50,8 @@ class HostPort {
 
 class Options {
  public:
-  virtual void CheckOptions(std::vector<std::string>* errors) {}
+  virtual void CheckOptions(std::vector<std::string>* errors,
+                            std::vector<std::string>* argv) {}
   virtual ~Options() = default;
 };
 
@@ -99,7 +100,8 @@ class DebugOptions : public Options {
     return break_first_line || break_node_first_line;
   }
 
-  void CheckOptions(std::vector<std::string>* errors) override;
+  void CheckOptions(std::vector<std::string>* errors,
+                    std::vector<std::string>* argv) override;
 };
 
 class EnvironmentOptions : public Options {
@@ -137,7 +139,6 @@ class EnvironmentOptions : public Options {
   bool preserve_symlinks = false;
   bool preserve_symlinks_main = false;
   bool prof_process = false;
-  bool update_assert_snapshot = false;
 #if HAVE_INSPECTOR
   std::string cpu_prof_dir;
   static const uint64_t kDefaultCpuProfInterval = 1000;
@@ -153,7 +154,10 @@ class EnvironmentOptions : public Options {
   std::string redirect_warnings;
   std::string diagnostic_dir;
   bool test_runner = false;
+  bool test_runner_coverage = false;
   std::vector<std::string> test_name_pattern;
+  std::vector<std::string> test_reporter;
+  std::vector<std::string> test_reporter_destination;
   bool test_only = false;
   bool test_udp_no_try_send = false;
   bool throw_deprecation = false;
@@ -176,6 +180,7 @@ class EnvironmentOptions : public Options {
 
   bool watch_mode = false;
   bool watch_mode_report_to_parent = false;
+  bool watch_mode_preserve_output = false;
   std::vector<std::string> watch_mode_paths;
 
   bool syntax_check_only = false;
@@ -202,7 +207,8 @@ class EnvironmentOptions : public Options {
   inline DebugOptions* get_debug_options() { return &debug_options_; }
   inline const DebugOptions& debug_options() const { return debug_options_; }
 
-  void CheckOptions(std::vector<std::string>* errors) override;
+  void CheckOptions(std::vector<std::string>* errors,
+                    std::vector<std::string>* argv) override;
 
  private:
   DebugOptions debug_options_;
@@ -214,9 +220,11 @@ class PerIsolateOptions : public Options {
   bool track_heap_objects = false;
   bool report_uncaught_exception = false;
   bool report_on_signal = false;
+  bool experimental_shadow_realm = false;
   std::string report_signal = "SIGUSR2";
   inline EnvironmentOptions* get_per_env_options();
-  void CheckOptions(std::vector<std::string>* errors) override;
+  void CheckOptions(std::vector<std::string>* errors,
+                    std::vector<std::string>* argv) override;
 };
 
 class PerProcessOptions : public Options {
@@ -289,7 +297,8 @@ class PerProcessOptions : public Options {
   std::vector<std::string> cmdline;
 
   inline PerIsolateOptions* get_per_isolate_options();
-  void CheckOptions(std::vector<std::string>* errors) override;
+  void CheckOptions(std::vector<std::string>* errors,
+                    std::vector<std::string>* argv) override;
 };
 
 // The actual options parser, as opposed to the structs containing them:

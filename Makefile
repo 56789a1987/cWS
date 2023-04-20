@@ -1,9 +1,9 @@
 CPP_SHARED := -DUSE_LIBUV -std=c++17 -O3 -I ./src/headers/$$MAJOR -shared -fPIC ./src/Extensions.cpp ./src/Group.cpp ./src/Networking.cpp ./src/Hub.cpp ./src/cSNode.cpp ./src/WebSocket.cpp ./src/HTTPSocket.cpp ./src/Socket.cpp ./src/Epoll.cpp ./src/Addon.cpp
 CPP_OSX := -stdlib=libc++ -mmacosx-version-min=10.7 -undefined dynamic_lookup
 
-VER_83  := v14.19.0
-VER_93  := v16.18.0
-VER_108 := v18.12.0
+VER_83  := v14.21.3
+VER_93  := v16.20.0
+VER_108 := v18.16.0
 
 default:
 	make targets
