@@ -6,6 +6,7 @@ coverage/
 excludes/
 node_modules/
 
+*.node
 build_log.txt
 crash_log.txt
 package-lock.json
