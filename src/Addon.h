@@ -5,6 +5,7 @@
 #include <uv.h>
 #include <cstring>
 
+#define HAVE_OPENSSL 1
 #define NODE_WANT_INTERNALS 1
 
 #if NODE_MAJOR_VERSION==14
