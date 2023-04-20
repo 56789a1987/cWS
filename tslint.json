@@ -1,7 +1,6 @@
 {
   "extends": [
-    "tslint:recommended",
-    "tslint-eslint-rules"
+    "tslint:recommended"
   ],
   "rules": {
     "unified-signatures": false,
@@ -50,13 +49,6 @@
     ],
     "no-console": false,
     "curly": true,
-    "brace-style": [
-      true,
-      "1tbs",
-      {
-        "allowSingleLine": true
-      }
-    ],
     "max-line-length": [
       true,
       180

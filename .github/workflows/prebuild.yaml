@@ -16,8 +16,8 @@ jobs:
   Linux:
     strategy:
       matrix:
-        node: [14, 16, 18]
-        tag: ["v4.3.1"]
+        node: [14, 16, 18, 20]
+        tag: ["v4.4.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     env:
@@ -33,7 +33,7 @@ jobs:
         run: |
           node -p "'NODE_ABI=' + process.versions.modules" >> $GITHUB_ENV
           npm install -g node-gyp
-          npm install --ignore-scripts --legacy-peer-deps
+          npm install --ignore-scripts
           node-gyp rebuild
 
       - name: Test binary
@@ -73,8 +73,8 @@ jobs:
   MacOS:
     strategy:
       matrix:
-        node: [12, 14, 16, 18, 19]
-        tag: ["v4.3.1"]
+        node: [14, 16, 18, 20]
+        tag: ["v4.4.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS
     runs-on: macos-latest
     env:
@@ -90,7 +90,7 @@ jobs:
         run: |
           node -p "'NODE_ABI=' + process.versions.modules" >> $GITHUB_ENV
           npm install -g node-gyp
-          npm install --ignore-scripts --legacy-peer-deps
+          npm install --ignore-scripts
           node-gyp rebuild
 
       - name: Test binary
@@ -130,8 +130,8 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [12, 14, 16, 18, 19]
-        tag: ["v4.3.1"]
+        node: [14, 16, 18, 20]
+        tag: ["v4.4.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
@@ -147,7 +147,7 @@ jobs:
         run: |
           node -p "'NODE_ABI=' + process.versions.modules" | Out-File -FilePath $env:GITHUB_ENV -Append
           npm install -g node-gyp
-          npm install --ignore-scripts --legacy-peer-deps
+          npm install --ignore-scripts
           node-gyp rebuild
 
       - name: Test binary

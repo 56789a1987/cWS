@@ -4,7 +4,7 @@ exports.WebSocket = void 0;
 const server_1 = require("./server");
 const shared_1 = require("./shared");
 const clientGroup = shared_1.native.client.group.create(0, shared_1.DEFAULT_PAYLOAD_LIMIT);
-shared_1.setupNative(clientGroup, 'client');
+(0, shared_1.setupNative)(clientGroup, 'client');
 class WebSocket {
     constructor(url, options = {}) {
         this.url = url;
@@ -97,7 +97,7 @@ class WebSocket {
         }
     }
 }
-exports.WebSocket = WebSocket;
 WebSocket.OPEN = 1;
 WebSocket.CLOSED = 3;
 WebSocket.Server = server_1.WebSocketServer;
+exports.WebSocket = WebSocket;

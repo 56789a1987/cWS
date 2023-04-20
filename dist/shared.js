@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupNative = exports.native = exports.DEFAULT_PAYLOAD_LIMIT = exports.SLIDING_DEFLATE_WINDOW = exports.PERMESSAGE_DEFLATE = exports.APP_PING_CODE = exports.OPCODE_BINARY = exports.OPCODE_PING = exports.OPCODE_TEXT = exports.noop = void 0;
 const client_1 = require("./client");
-exports.noop = () => { };
+const noop = () => { };
+exports.noop = noop;
 exports.OPCODE_TEXT = 1;
 exports.OPCODE_PING = 9;
 exports.OPCODE_BINARY = 2;

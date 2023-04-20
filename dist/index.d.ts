@@ -1,8 +1,9 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import * as HTTP from 'http';
 import * as HTTPS from 'https';
 import type { WebSocket } from './client';
-export declare type VerifyClientNext = (verified: boolean, code?: number, message?: string) => void;
+export type VerifyClientNext = (verified: boolean, code?: number, message?: string) => void;
 export interface SocketAddress {
     remotePort?: number;
     remoteAddress?: string;
