@@ -1,0 +1,23 @@
+diff -ur a/connection_wrap.h b/connection_wrap.h
+--- a/connection_wrap.h
++++ b/connection_wrap.h
+@@ -15,7 +15,6 @@
+   static void OnConnection(uv_stream_t* handle, int status);
+   static void AfterConnect(uv_connect_t* req, int status);
+ 
+- protected:
+   ConnectionWrap(Environment* env,
+                  v8::Local<v8::Object> object,
+                  ProviderType provider);
+diff -ur a/crypto/crypto_tls.h b/crypto/crypto_tls.h
+--- a/crypto/crypto_tls.h
++++ b/crypto/crypto_tls.h
+@@ -103,7 +103,7 @@
+ 
+   std::string diagnostic_name() const override;
+ 
+- private:
++ protected:
+   // OpenSSL structures are opaque. Estimate SSL memory size for OpenSSL 1.1.1b:
+   //   SSL: 6224
+   //   SSL->SSL3_STATE: 1040
