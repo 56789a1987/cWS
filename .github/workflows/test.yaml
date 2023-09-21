@@ -1,0 +1,69 @@
+name: Test builds
+on: workflow_dispatch
+
+jobs:
+  Linux:
+    strategy:
+      matrix:
+        node: [14, 16, 18, 20]
+    name: Node.js ${{ matrix.node }}, Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          npm install -g node-gyp
+          npm install --ignore-scripts
+          node-gyp rebuild
+
+      - name: Test binary
+        run: npm run test
+
+  MacOS:
+    strategy:
+      matrix:
+        node: [14, 16, 18, 20]
+    name: Node.js ${{ matrix.node }}, MacOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          npm install -g node-gyp
+          npm install --ignore-scripts
+          node-gyp rebuild
+
+      - name: Test binary
+        run: npm run test
+
+  Win:
+    strategy:
+      matrix:
+        node: [14, 16, 18, 20]
+    name: Node.js ${{ matrix.node }}, Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build
+        run: |
+          npm install -g node-gyp
+          npm install --ignore-scripts
+          node-gyp rebuild
+
+      - name: Test binary
+        run: npm run test
