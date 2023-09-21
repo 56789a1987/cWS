@@ -1,8 +1,8 @@
 import * as HTTP from 'http';
 import * as HTTPS from 'https';
 
-import { Socket } from 'net';
-import { WebSocket } from './client';
+import type { Socket } from 'net';
+import type { WebSocket } from './client';
 import type { ServerConfigs, SocketServerEvents } from './index';
 import { native, noop, setupNative, APP_PING_CODE, PERMESSAGE_DEFLATE, SLIDING_DEFLATE_WINDOW, DEFAULT_PAYLOAD_LIMIT } from './shared';
 
@@ -188,7 +188,7 @@ export class WebSocketServer {
       if (socketHandle && secKey && secKey.length === 24) {
         const sslState: any = socketAsAny.ssl ? native.getSSLContext(socketAsAny.ssl) : null;
 
-        socket.setNoDelay(this.options.noDelay === false ? false : true);
+        socket.setNoDelay(!!this.options.noDelay);
         const ticket: any = native.transfer(socketHandle.fd === -1 ? socketHandle : socketHandle.fd, sslState);
         socket.on('close', (): void => {
           if (this.serverGroup) {

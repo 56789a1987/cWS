@@ -143,7 +143,7 @@ class WebSocketServer {
             const socketHandle = socketAsAny.ssl ? socketAsAny._parent._handle : socketAsAny._handle;
             if (socketHandle && secKey && secKey.length === 24) {
                 const sslState = socketAsAny.ssl ? shared_1.native.getSSLContext(socketAsAny.ssl) : null;
-                socket.setNoDelay(this.options.noDelay === false ? false : true);
+                socket.setNoDelay(!!this.options.noDelay);
                 const ticket = shared_1.native.transfer(socketHandle.fd === -1 ? socketHandle : socketHandle.fd, sslState);
                 socket.on('close', () => {
                     if (this.serverGroup) {

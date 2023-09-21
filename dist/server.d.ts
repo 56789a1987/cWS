@@ -2,8 +2,8 @@
 /// <reference types="node" />
 /// <reference types="node" />
 import * as HTTP from 'http';
-import { Socket } from 'net';
-import { WebSocket } from './client';
+import type { Socket } from 'net';
+import type { WebSocket } from './client';
 import type { ServerConfigs, SocketServerEvents } from './index';
 export declare class WebSocketServer {
     private options;

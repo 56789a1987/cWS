@@ -261,6 +261,10 @@ enum Flags : uint32_t {
   kNoUseLargePages = 1 << 11,
   // Skip printing output for --help, --version, --v8-options.
   kNoPrintHelpOrVersionOutput = 1 << 12,
+  // Do not perform cppgc initialization. If set, the embedder must call
+  // cppgc::InitializeProcess() before creating a Node.js environment
+  // and call cppgc::ShutdownProcess() before process shutdown.
+  kNoInitializeCppgc = 1 << 13,
 
   // Emulate the behavior of InitializeNodeWithArgs() when passing
   // a flags argument to the InitializeOncePerProcess() replacement
@@ -269,7 +273,7 @@ enum Flags : uint32_t {
       kNoStdioInitialization | kNoDefaultSignalHandling | kNoInitializeV8 |
       kNoInitializeNodeV8Platform | kNoInitOpenSSL |
       kNoParseGlobalDebugVariables | kNoAdjustResourceLimits |
-      kNoUseLargePages | kNoPrintHelpOrVersionOutput,
+      kNoUseLargePages | kNoPrintHelpOrVersionOutput | kNoInitializeCppgc,
 };
 }  // namespace ProcessInitializationFlags
 namespace ProcessFlags = ProcessInitializationFlags;  // Legacy alias.
@@ -285,7 +289,7 @@ enum Flags : uint32_t {
 
 class NODE_EXTERN InitializationResult {
  public:
-  virtual ~InitializationResult();
+  virtual ~InitializationResult() = default;
 
   // Returns a suggested process exit code.
   virtual int exit_code() const = 0;
@@ -505,6 +509,9 @@ struct IsolateSettings {
 // feature during the build step by passing the --disable-shared-readonly-heap
 // flag to the configure script.
 //
+// The snapshot *must* be kept alive during the execution of the Isolate
+// that was created using it.
+//
 // Snapshots are an *experimental* feature. In particular, the embedder API
 // exposed through this class is subject to change or removal between Node.js
 // versions, including possible API and ABI breakage.
@@ -651,7 +658,7 @@ enum Flags : uint64_t {
 }  // namespace EnvironmentFlags
 
 struct InspectorParentHandle {
-  virtual ~InspectorParentHandle();
+  virtual ~InspectorParentHandle() = default;
 };
 
 // TODO(addaleax): Maybe move per-Environment options parsing here.
@@ -722,7 +729,8 @@ NODE_EXTERN ArrayBufferAllocator* GetArrayBufferAllocator(IsolateData* data);
 // a snapshot and have a main context that was read from that snapshot.
 NODE_EXTERN v8::Local<v8::Context> GetMainContext(Environment* env);
 
-NODE_EXTERN void OnFatalError(const char* location, const char* message);
+[[noreturn]] NODE_EXTERN void OnFatalError(const char* location,
+                                           const char* message);
 NODE_EXTERN void PromiseRejectCallback(v8::PromiseRejectMessage message);
 NODE_EXTERN bool AllowWasmCodeGenerationCallback(v8::Local<v8::Context> context,
                                             v8::Local<v8::String>);
@@ -812,6 +820,8 @@ NODE_EXTERN struct uv_loop_s* GetCurrentEventLoop(v8::Isolate* isolate);
 // This function only works if `env` has an associated `MultiIsolatePlatform`.
 NODE_EXTERN v8::Maybe<int> SpinEventLoop(Environment* env);
 
+NODE_EXTERN std::string GetAnonymousMainPath();
+
 class NODE_EXTERN CommonEnvironmentSetup {
  public:
   ~CommonEnvironmentSetup();
@@ -843,6 +853,13 @@ class NODE_EXTERN CommonEnvironmentSetup {
   // Not all Node.js APIs are supported in this case. Currently, there is
   // no support for native/host objects other than Node.js builtins
   // in the snapshot.
+  //
+  // If the embedder wants to use LoadEnvironment() later to run a snapshot
+  // builder script they should make sure args[1] contains the path of the
+  // snapshot script, which will be used to create __filename and __dirname
+  // in the context where the builder script is run. If they do not want to
+  // include the build-time paths into the snapshot, use the string returned
+  // by GetAnonymousMainPath() as args[1] to anonymize the script.
   //
   // Snapshots are an *experimental* feature. In particular, the embedder API
   // exposed through this class is subject to change or removal between Node.js
@@ -905,6 +922,7 @@ std::unique_ptr<CommonEnvironmentSetup> CommonEnvironmentSetup::Create(
   if (!errors->empty()) ret.reset();
   return ret;
 }
+
 // Implementation for ::CreateFromSnapshot -- the ::Create() method
 // could call this with a nullptr snapshot_data in a major version.
 template <typename... EnvironmentArgs>
@@ -1236,9 +1254,11 @@ NODE_EXTERN void AddLinkedBinding(Environment* env,
                                   const char* name,
                                   addon_context_register_func fn,
                                   void* priv);
-NODE_EXTERN void AddLinkedBinding(Environment* env,
-                                  const char* name,
-                                  napi_addon_register_func fn);
+NODE_EXTERN void AddLinkedBinding(
+    Environment* env,
+    const char* name,
+    napi_addon_register_func fn,
+    int32_t module_api_version = NODE_API_DEFAULT_MODULE_API_VERSION);
 
 /* Registers a callback with the passed-in Environment instance. The callback
  * is called after the event loop exits, but before the VM is disposed.
@@ -1469,6 +1489,25 @@ void RegisterSignalHandler(int signal,
                                            void* ucontext),
                            bool reset_handler = false);
 #endif  // _WIN32
+
+// Configure the layout of the JavaScript object with a cppgc::GarbageCollected
+// instance so that when the JavaScript object is reachable, the garbage
+// collected instance would have its Trace() method invoked per the cppgc
+// contract. To make it work, the process must have called
+// cppgc::InitializeProcess() before, which is usually the case for addons
+// loaded by the stand-alone Node.js executable. Embedders of Node.js can use
+// either need to call it themselves or make sure that
+// ProcessInitializationFlags::kNoInitializeCppgc is *not* set for cppgc to
+// work.
+// If the CppHeap is owned by Node.js, which is usually the case for addon,
+// the object must be created with at least two internal fields available,
+// and the first two internal fields would be configured by Node.js.
+// This may be superseded by a V8 API in the future, see
+// https://bugs.chromium.org/p/v8/issues/detail?id=13960. Until then this
+// serves as a helper for Node.js isolates.
+NODE_EXTERN void SetCppgcReference(v8::Isolate* isolate,
+                                   v8::Local<v8::Object> object,
+                                   void* wrappable);
 
 }  // namespace node
 

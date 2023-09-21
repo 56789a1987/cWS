@@ -30,6 +30,7 @@ struct uv_loop_s;  // Forward declaration.
 
 typedef napi_value(NAPI_CDECL* napi_addon_register_func)(napi_env env,
                                                          napi_value exports);
+typedef int32_t(NAPI_CDECL* node_api_addon_get_api_version_func)(void);
 
 // Used by deprecated registration method napi_module_register.
 typedef struct napi_module {
@@ -54,11 +55,20 @@ typedef struct napi_module {
 #define NAPI_MODULE_INITIALIZER_BASE napi_register_module_v
 #endif
 
+#define NODE_API_MODULE_GET_API_VERSION_BASE node_api_module_get_api_version_v
+
 #define NAPI_MODULE_INITIALIZER                                                \
   NAPI_MODULE_INITIALIZER_X(NAPI_MODULE_INITIALIZER_BASE, NAPI_MODULE_VERSION)
 
+#define NODE_API_MODULE_GET_API_VERSION                                        \
+  NAPI_MODULE_INITIALIZER_X(NODE_API_MODULE_GET_API_VERSION_BASE,              \
+                            NAPI_MODULE_VERSION)
+
 #define NAPI_MODULE_INIT()                                                     \
   EXTERN_C_START                                                               \
+  NAPI_MODULE_EXPORT int32_t NODE_API_MODULE_GET_API_VERSION(void) {           \
+    return NAPI_VERSION;                                                       \
+  }                                                                            \
   NAPI_MODULE_EXPORT napi_value NAPI_MODULE_INITIALIZER(napi_env env,          \
                                                         napi_value exports);   \
   EXTERN_C_END                                                                 \
@@ -238,12 +248,12 @@ napi_remove_async_cleanup_hook(napi_async_cleanup_hook_handle remove_handle);
 
 #endif  // NAPI_VERSION >= 8
 
-#ifdef NAPI_EXPERIMENTAL
+#if NAPI_VERSION >= 9
 
 NAPI_EXTERN napi_status NAPI_CDECL
 node_api_get_module_file_name(napi_env env, const char** result);
 
-#endif  // NAPI_EXPERIMENTAL
+#endif  // NAPI_VERSION >= 9
 
 EXTERN_C_END
 

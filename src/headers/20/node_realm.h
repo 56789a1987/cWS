@@ -21,9 +21,9 @@ struct RealmSerializeInfo {
   friend std::ostream& operator<<(std::ostream& o, const RealmSerializeInfo& i);
 };
 
-using BindingDataStore = std::array<BaseObjectPtr<BaseObject>,
-                     static_cast<size_t>(
-                         BindingDataType::kBindingDataTypeCount)>;
+using BindingDataStore =
+    std::array<BaseObjectWeakPtr<BaseObject>,
+               static_cast<size_t>(BindingDataType::kBindingDataTypeCount)>;
 
 /**
  * node::Realm is a container for a set of JavaScript objects and functions
@@ -92,9 +92,8 @@ class Realm : public MemoryRetainer {
   // Methods created using SetMethod(), SetPrototypeMethod(), etc. inside
   // this scope can access the created T* object using
   // GetBindingData<T>(args) later.
-  template <typename T>
-  T* AddBindingData(v8::Local<v8::Context> context,
-                    v8::Local<v8::Object> target);
+  template <typename T, typename... Args>
+  T* AddBindingData(v8::Local<v8::Object> target, Args&&... args);
   template <typename T, typename U>
   static inline T* GetBindingData(const v8::PropertyCallbackInfo<U>& info);
   template <typename T>
@@ -102,6 +101,8 @@ class Realm : public MemoryRetainer {
       const v8::FunctionCallbackInfo<v8::Value>& info);
   template <typename T>
   static inline T* GetBindingData(v8::Local<v8::Context> context);
+  template <typename T>
+  inline T* GetBindingData();
   inline BindingDataStore* binding_data_store();
 
   // The BaseObject count is a debugging helper that makes sure that there are
@@ -161,7 +162,7 @@ class PrincipalRealm : public Realm {
   PrincipalRealm(Environment* env,
                  v8::Local<v8::Context> context,
                  const RealmSerializeInfo* realm_info);
-  ~PrincipalRealm() = default;
+  ~PrincipalRealm();
 
   SET_MEMORY_INFO_NAME(PrincipalRealm)
   SET_SELF_SIZE(PrincipalRealm)
