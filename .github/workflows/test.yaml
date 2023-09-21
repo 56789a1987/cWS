@@ -8,6 +8,8 @@ jobs:
         node: [14, 16, 18, 20]
     name: Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
+    env:
+      UV_USE_IO_URING: 0
     steps:
       - uses: actions/checkout@v2
 

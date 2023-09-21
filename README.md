@@ -14,21 +14,27 @@
 * This repository is a fork of [ClusterWS/cWS](https://github.com/ClusterWS/cWS)
 
 * This repository is a fork of [uWebSockets v0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) therefore has two licence [MIT](https://github.com/ClusterWS/uWS/blob/master/LICENSE) and [ZLIB](https://github.com/ClusterWS/uWS/blob/master/src/LICENSE)
+
 * Consider using latest [uWebSockets](https://github.com/uNetworking/uWebSockets.js) version instead
 
 ## Supported Node Versions (SSL)
 
 This table is true if you run ssl directly with `cws` (`Node.js`). In case if you use proxy for example `nginx`, `cws` can be run on bigger coverage.
 
-| CWS Version | Node 10  | Node 11 | Node 12 | Node 13 | Node 14 | Node 16         | Node 18         | Node 19 | Node 20         |
-|-------------|----------|---------|---------|---------|---------|-----------------|-----------------|---------|-----------------|
-| 4.4.0       |    X     |    X    |    X    |    X    | >=14.20 | >=16.18         | >=18.13         |    X    | >=20.0 & <20.3  |
-| 4.3.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.18         | >=18.13         | >=19.2  |    X            |
-| 4.2.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 | >=19.0  |    X            |
-| 4.1.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 |    X    |    X            |
-| 4.0.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 |    X            |    X    |    X            |
-| 3.0.0       | >=10.0   |    X    | >=12.16 | >=13.9  | >=14.5  |    X            |    X            |    X    |    X            |
-| 2.0.0       | >=10.0   |    X    | >=12.16 | >=13.9  |   X     |    X            |    X            |    X    |    X            |
+| CWS Version | Node 10  | Node 11 | Node 12 | Node 13 | Node 14 | Node 16         | Node 18         | Node 19 | Node 20 |
+|-------------|----------|---------|---------|---------|---------|-----------------|-----------------|---------|---------|
+| 4.5.0       |    X     |    X    |    X    |    X    | >=14.21 | >=16.20         | >=18.18         |    X    | >=20.7  |
+| 4.4.0       |    X     |    X    |    X    |    X    | >=14.20 | >=16.18         | >=18.13         |    X    | >=20.0  |
+| 4.3.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.18         | >=18.13         | >=19.2  |    X    |
+| 4.2.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 | >=19.0  |    X    |
+| 4.1.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 |    X    |    X    |
+| 4.0.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 |    X            |    X    |    X    |
+| 3.0.0       | >=10.0   |    X    | >=12.16 | >=13.9  | >=14.5  |    X            |    X            |    X    |    X    |
+| 2.0.0       | >=10.0   |    X    | >=12.16 | >=13.9  |   X     |    X            |    X            |    X    |    X    |
+
+Note: Some tests fail when using Node >=18.18 & >=20.3 on Linux.
+Setting the environment variable `UV_USE_IO_URING=0` fixes this.
+If the application is having problems on Linux, try setting this.
 
 ## Documentation
 
