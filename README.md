@@ -9,13 +9,13 @@
 
 ## Important Notes
 
-* **Consider using latest version of uWebSockets if you don't need ws compatibility.**
+* **Consider using latest version of [uWebSockets](https://github.com/uNetworking/uWebSockets.js) if you don't need ws compatibility.**
 
 * This repository is a fork of [ClusterWS/cWS](https://github.com/ClusterWS/cWS)
 
 * This repository is a fork of [uWebSockets v0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) therefore has two licence [MIT](https://github.com/ClusterWS/uWS/blob/master/LICENSE) and [ZLIB](https://github.com/ClusterWS/uWS/blob/master/src/LICENSE)
 
-* Consider using latest [uWebSockets](https://github.com/uNetworking/uWebSockets.js) version instead
+* Due to [a libuv update](https://github.com/libuv/libuv/pull/3952), when using Node v18.18+ or Node v20.3+ on Linux, some tests fail. Setting the environment variable `UV_USE_IO_URING=0` fixes the tests. If the application is having problems on Linux, try setting this environment variable.
 
 ## Supported Node Versions (SSL)
 
@@ -31,10 +31,6 @@ This table is true if you run ssl directly with `cws` (`Node.js`). In case if yo
 | 4.0.0       |    X     |    X    | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 |    X            |    X    |    X    |
 | 3.0.0       | >=10.0   |    X    | >=12.16 | >=13.9  | >=14.5  |    X            |    X            |    X    |    X    |
 | 2.0.0       | >=10.0   |    X    | >=12.16 | >=13.9  |   X     |    X            |    X            |    X    |    X    |
-
-Note: Some tests fail when using Node >=18.18 & >=20.3 on Linux.
-Setting the environment variable `UV_USE_IO_URING=0` fixes this.
-If the application is having problems on Linux, try setting this.
 
 ## Documentation
 
