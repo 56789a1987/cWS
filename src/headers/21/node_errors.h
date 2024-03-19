@@ -19,9 +19,14 @@ void AppendExceptionLine(Environment* env,
                          v8::Local<v8::Message> message,
                          enum ErrorHandlingMode mode);
 
+// This function calls backtrace, it should have not be marked as [[noreturn]].
+// But it is a public API, removing the attribute can break.
+// Prefer UNREACHABLE() internally instead, it doesn't need manually set
+// location.
 [[noreturn]] void OnFatalError(const char* location, const char* message);
-[[noreturn]] void OOMErrorHandler(const char* location,
-                                  const v8::OOMDetails& details);
+// This function calls backtrace, do not mark as [[noreturn]]. Read more in the
+// ABORT macro.
+void OOMErrorHandler(const char* location, const v8::OOMDetails& details);
 
 // Helpers to construct errors similar to the ones provided by
 // lib/internal/errors.js.
@@ -71,6 +76,7 @@ void AppendExceptionLine(Environment* env,
   V(ERR_INVALID_ARG_TYPE, TypeError)                                           \
   V(ERR_INVALID_FILE_URL_HOST, TypeError)                                      \
   V(ERR_INVALID_FILE_URL_PATH, TypeError)                                      \
+  V(ERR_INVALID_PACKAGE_CONFIG, Error)                                         \
   V(ERR_INVALID_OBJECT_DEFINE_PROPERTY, TypeError)                             \
   V(ERR_INVALID_MODULE, Error)                                                 \
   V(ERR_INVALID_STATE, Error)                                                  \
@@ -123,6 +129,10 @@ void AppendExceptionLine(Environment* env,
   inline void THROW_##code(                                                    \
       Environment* env, const char* format, Args&&... args) {                  \
     THROW_##code(env->isolate(), format, std::forward<Args>(args)...);         \
+  }                                                                            \
+  template <typename... Args>                                                  \
+  inline void THROW_##code(Realm* realm, const char* format, Args&&... args) { \
+    THROW_##code(realm->isolate(), format, std::forward<Args>(args)...);       \
   }
 ERRORS_WITH_CODE(V)
 #undef V

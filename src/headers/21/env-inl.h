@@ -430,14 +430,6 @@ inline builtins::BuiltinLoader* Environment::builtin_loader() {
   return &builtin_loader_;
 }
 
-inline const StartExecutionCallback& Environment::embedder_entry_point() const {
-  return embedder_entry_point_;
-}
-
-inline void Environment::set_embedder_entry_point(StartExecutionCallback&& fn) {
-  embedder_entry_point_ = std::move(fn);
-}
-
 inline double Environment::new_async_id() {
   async_hooks()->async_id_fields()[AsyncHooks::kAsyncIdCounter] += 1;
   return async_hooks()->async_id_fields()[AsyncHooks::kAsyncIdCounter];
@@ -775,11 +767,16 @@ inline void Environment::ThrowRangeError(const char* errmsg) {
   ThrowError(v8::Exception::RangeError, errmsg);
 }
 
-inline void Environment::ThrowError(
-    v8::Local<v8::Value> (*fun)(v8::Local<v8::String>),
-    const char* errmsg) {
+inline void Environment::ThrowError(V8ExceptionConstructorOld fun,
+                                    const char* errmsg) {
   v8::HandleScope handle_scope(isolate());
   isolate()->ThrowException(fun(OneByteString(isolate(), errmsg)));
+}
+
+inline void Environment::ThrowError(V8ExceptionConstructorNew fun,
+                                    const char* errmsg) {
+  v8::HandleScope handle_scope(isolate());
+  isolate()->ThrowException(fun(OneByteString(isolate(), errmsg), {}));
 }
 
 inline void Environment::ThrowErrnoException(int errorno,
