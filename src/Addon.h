@@ -8,12 +8,6 @@
 #define HAVE_OPENSSL 1
 #define NODE_WANT_INTERNALS 1
 
-#if NODE_MAJOR_VERSION==16
-  #include "headers/16/tcp_wrap.h"
-  #include "headers/16/crypto/crypto_tls.h"
-  #include "headers/16/base_object-inl.h"
-#endif
-
 #if NODE_MAJOR_VERSION==18
   #include "headers/18/tcp_wrap.h"
   #include "headers/18/crypto/crypto_tls.h"
@@ -30,6 +24,12 @@
   #include "headers/21/tcp_wrap.h"
   #include "headers/21/crypto/crypto_tls.h"
   #include "headers/21/base_object-inl.h"
+#endif
+
+#if NODE_MAJOR_VERSION==22
+  #include "headers/22/tcp_wrap.h"
+  #include "headers/22/crypto/crypto_tls.h"
+  #include "headers/22/base_object-inl.h"
 #endif
 
 using BaseObject = node::BaseObject;

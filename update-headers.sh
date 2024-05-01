@@ -1,18 +1,19 @@
 #!/bin/bash
 
-mkdir targets
+set -eu
+mkdir -p targets
 
 if [ -e targets/headers ]; then
-    rm -r targets/headers
+    rm -rf targets/headers
 fi
-mkdir targets/headers
+mkdir -p targets/headers
 
-for version in v16.20.0 v18.19.0 v20.11.0 v21.7.0; do
+for version in v18.20.0 v20.12.0 v21.7.0 v22.0.0; do
     major=$(echo $version | grep -o -E "[0-9]+" | head -n 1)
     header=targets/headers/$major
     extract=targets/node-$version
     v8dir=node-$version/deps/v8/include
-    mkdir $header
+    mkdir -p $header
 
     echo Downloading node-$version
     wget -c https://nodejs.org/dist/$version/node-$version.tar.xz -P targets
@@ -35,6 +36,6 @@ done
 
 echo Moving header files to src
 if [ -e src/headers ]; then
-    rm -r src/headers
+    rm -rf src/headers
 fi
 mv targets/headers src/headers
