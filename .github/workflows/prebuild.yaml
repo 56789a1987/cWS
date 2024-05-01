@@ -131,7 +131,7 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [18, 20, 21, 22]
+        node: [18, 20, 21]
         tag: ["v4.7.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
