@@ -136,6 +136,7 @@ class EnvironmentOptions : public Options {
   int64_t heap_snapshot_near_heap_limit = 0;
   std::string heap_snapshot_signal;
   bool network_family_autoselection = true;
+  uint64_t network_family_autoselection_attempt_timeout = 250;
   uint64_t max_http_header_size = 16 * 1024;
   bool deprecation = true;
   bool force_async_hooks_checks = true;
@@ -176,6 +177,7 @@ class EnvironmentOptions : public Options {
   bool test_only = false;
   bool test_udp_no_try_send = false;
   std::string test_shard;
+  std::vector<std::string> test_skip_pattern;
   bool throw_deprecation = false;
   bool trace_atomics_wait = false;
   bool trace_deprecation = false;
