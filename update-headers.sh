@@ -31,7 +31,7 @@ for version in v18.20.0 v20.12.0 v21.7.0 v22.1.0; do
     done
 
     echo Patching header files for node-$version
-    patch -Ntp1 --no-backup-if-mismatch -d $header < header.patch
+    patch -Ntp1 --no-backup-if-mismatch -d $header < headers.patch
 done
 
 echo Moving header files to src

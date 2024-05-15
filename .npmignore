@@ -11,9 +11,11 @@ examples/
 .travis.yml
 .gitignore
 
+headers.patch
 make.bat
 Makefile
 build_log.txt
 package-lock.json
 tsconfig.json
 tslint.json
+update-headers.sh
