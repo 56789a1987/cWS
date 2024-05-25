@@ -148,6 +148,11 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - uses: numworks/setup-msys2@v1
+        with:
+          update: true
+          path-type: inherit
+
       - name: Build
         run: |
           npm install -g node-gyp
