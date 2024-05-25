@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         node: [18, 20, 21, 22]
-        tag: ["v4.7.1"]
+        tag: ["v4.7.2"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     env:
@@ -32,21 +32,23 @@ jobs:
 
       - name: Build
         run: |
-          node -p "'NODE_ABI=' + process.versions.modules" >> $GITHUB_ENV
           npm install -g node-gyp
           npm install --ignore-scripts
           node-gyp rebuild
 
       - name: Test binary
         run: npm run test
+      
+      - name: Tarball
+        id: tarball
+        run: ./tarball.sh
 
       - name: Upload
         uses: actions/github-script@0.9.0
         with:
           script: |
             const fs = require("fs");
-            const assetName = "cws_linux_${{ env.NODE_ABI }}.node";
-            const assetPath = "build/Release/cws.node";
+            const assetName = "${{ steps.tarball.outputs.asset_name }}";
             const tagName = process.env.BUILD_TAG;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
@@ -64,18 +66,18 @@ jobs:
             await github.repos.uploadReleaseAsset({
               url: release.upload_url,
               headers: {
-                "content-type": "application/x-executable",
-                "content-length": `${fs.statSync(assetPath).size}`
+                "content-type": "application/x-gzip",
+                "content-length": `${fs.statSync(assetName).size}`
               },
               name: assetName,
-              data: fs.readFileSync(assetPath)
+              data: fs.readFileSync(assetName)
             });
 
   MacOS:
     strategy:
       matrix:
         node: [18, 20, 21, 22]
-        tag: ["v4.7.1"]
+        tag: ["v4.7.2"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS
     runs-on: macos-latest
     env:
@@ -89,7 +91,6 @@ jobs:
 
       - name: Build
         run: |
-          node -p "'NODE_ABI=' + process.versions.modules" >> $GITHUB_ENV
           npm install -g node-gyp
           npm install --ignore-scripts
           node-gyp rebuild
@@ -97,13 +98,16 @@ jobs:
       - name: Test binary
         run: npm run test
 
+      - name: Tarball
+        id: tarball
+        run: ./tarball.sh
+
       - name: Upload
         uses: actions/github-script@0.9.0
         with:
           script: |
             const fs = require("fs");
-            const assetName = "cws_darwin_${{ env.NODE_ABI }}.node";
-            const assetPath = "build/Release/cws.node";
+            const assetName = "${{ steps.tarball.outputs.asset_name }}";
             const tagName = process.env.BUILD_TAG;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
@@ -121,18 +125,18 @@ jobs:
             await github.repos.uploadReleaseAsset({
               url: release.upload_url,
               headers: {
-                "content-type": "application/x-executable",
-                "content-length": `${fs.statSync(assetPath).size}`
+                "content-type": "application/x-gzip",
+                "content-length": `${fs.statSync(assetName).size}`
               },
               name: assetName,
-              data: fs.readFileSync(assetPath)
+              data: fs.readFileSync(assetName)
             });
 
   Win:
     strategy:
       matrix:
         node: [18, 20, 21, 22]
-        tag: ["v4.7.1"]
+        tag: ["v4.7.2"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
@@ -146,7 +150,6 @@ jobs:
 
       - name: Build
         run: |
-          node -p "'NODE_ABI=' + process.versions.modules" | Out-File -FilePath $env:GITHUB_ENV -Append
           npm install -g node-gyp
           npm install --ignore-scripts
           node-gyp rebuild
@@ -154,13 +157,16 @@ jobs:
       - name: Test binary
         run: npm run test
 
+      - name: Tarball
+        id: tarball
+        run: msys2do BUILD_TAG=${{ env.BUILD_TAG }} ./tarball.sh
+
       - name: Upload
         uses: actions/github-script@0.9.0
         with:
           script: |
             const fs = require("fs");
-            const assetName = "cws_win32_${{ env.NODE_ABI }}.node";
-            const assetPath = "build/Release/cws.node";
+            const assetName = "${{ steps.tarball.outputs.asset_name }}";
             const tagName = process.env.BUILD_TAG;
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
@@ -178,9 +184,9 @@ jobs:
             await github.repos.uploadReleaseAsset({
               url: release.upload_url,
               headers: {
-                "content-type": "application/x-executable",
-                "content-length": `${fs.statSync(assetPath).size}`
+                "content-type": "application/x-gzip",
+                "content-length": `${fs.statSync(assetName).size}`
               },
               name: assetName,
-              data: fs.readFileSync(assetPath)
+              data: fs.readFileSync(assetName)
             });

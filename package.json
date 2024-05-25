@@ -1,6 +1,6 @@
 {
   "name": "@clusterws/cws",
-  "version": "4.7.1",
+  "version": "4.7.2",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "cWS - fast C++ WebSocket implementation for Node.js",
@@ -8,9 +8,9 @@
     "lint": "tslint -c tslint.json 'lib/**/*.ts'",
     "test": "nyc mocha './tests/**/*.test.ts' --exit",
     "clean": "rimraf dist/bindings/*",
-    "install": "node-gyp rebuild || exit 0",
+    "install": "prebuild-install -p dist/bindings || node-gyp rebuild",
     "build-ts": "rimraf dist/*.js && rimraf dist/*.ts && npm run lint && tsc",
-    "build-cpp": "node-gyp rebuild || exit 0",
+    "build-cpp": "node-gyp rebuild",
     "build-debug": "node-gyp rebuild --debug"
   },
   "keywords": [
@@ -23,10 +23,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ClusterWS/cWS"
+    "url": "https://github.com/56789a1987/cWS"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "prebuild-install": "^7.1.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

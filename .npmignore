@@ -19,4 +19,5 @@ build_log.txt
 package-lock.json
 tsconfig.json
 tslint.json
+tarball.sh
 update-headers.sh
