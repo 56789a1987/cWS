@@ -8,7 +8,7 @@
     "lint": "tslint -c tslint.json 'lib/**/*.ts'",
     "test": "nyc mocha './tests/**/*.test.ts' --exit",
     "clean": "rimraf dist/bindings/*",
-    "install": "prebuild-install -p dist/bindings || node-gyp rebuild",
+    "install": "prebuild-install || node-gyp rebuild",
     "build-ts": "rimraf dist/*.js && rimraf dist/*.ts && npm run lint && tsc",
     "build-cpp": "node-gyp rebuild",
     "build-debug": "node-gyp rebuild --debug"
