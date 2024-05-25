@@ -23,9 +23,9 @@ export const native: any = ((): NodeRequire => {
 
 export function setupNative(group: any, type: 'client' | 'server', wsServer?: WebSocketServer): void {
   native.setNoop(noop);
-  const _group: any = (type === 'server' ? native.server : native.client).group;
+  const nativeGroup: any = (type === 'server' ? native.server : native.client).group;
 
-  _group.onConnection(group, (external: any): void => {
+  nativeGroup.onConnection(group, (external: any): void => {
     if (type === 'server' && wsServer) {
       const socket: WebSocket = new WebSocket(null, { external });
       native.setUserData(external, socket);
@@ -46,19 +46,19 @@ export function setupNative(group: any, type: 'client' | 'server', wsServer?: We
     webSocket.registeredEvents.open();
   });
 
-  _group.onPing(group, (message: string | Buffer, webSocket: WebSocket): void => {
+  nativeGroup.onPing(group, (message: string | Buffer, webSocket: WebSocket): void => {
     webSocket.registeredEvents.ping(message);
   });
 
-  _group.onPong(group, (message: string | Buffer, webSocket: WebSocket): void => {
+  nativeGroup.onPong(group, (message: string | Buffer, webSocket: WebSocket): void => {
     webSocket.registeredEvents.pong(message);
   });
 
-  _group.onMessage(group, (message: string | Buffer, webSocket: WebSocket): void => {
+  nativeGroup.onMessage(group, (message: string | Buffer, webSocket: WebSocket): void => {
     webSocket.registeredEvents.message(message);
   });
 
-  _group.onDisconnection(group, (newExternal: any, code: number, message: any, webSocket: WebSocket): void => {
+  nativeGroup.onDisconnection(group, (newExternal: any, code: number, message: any, webSocket: WebSocket): void => {
     (webSocket as any).external = null;
 
     process.nextTick((): void => {
@@ -69,7 +69,7 @@ export function setupNative(group: any, type: 'client' | 'server', wsServer?: We
   });
 
   if (type === 'client') {
-    _group.onError(group, (webSocket: WebSocket): void => {
+    nativeGroup.onError(group, (webSocket: WebSocket): void => {
       process.nextTick((): void => {
         webSocket.registeredEvents.error(new Error('cWs client connection error'));
       });

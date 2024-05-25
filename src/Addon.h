@@ -72,13 +72,16 @@ uv_check_t check;
 Persistent<Function> noop;
 
 void registerCheck(Isolate *isolate) {
+  noop.Reset();
   uv_check_init((uv_loop_t *)hub.getLoop(), &check);
   check.data = isolate;
   uv_check_start(&check, [](uv_check_t *check) {
     Isolate *isolate = (Isolate *)check->data;
     HandleScope hs(isolate);
-    node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
-                       Local<Function>::New(isolate, noop), 0, nullptr);
+    if (!noop.IsEmpty()) {
+      node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
+                         Local<Function>::New(isolate, noop), 0, nullptr);
+    }
   });
   uv_unref((uv_handle_t *)&check);
 }
