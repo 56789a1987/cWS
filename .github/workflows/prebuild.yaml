@@ -79,7 +79,7 @@ jobs:
         node: [18, 20, 21, 22]
         tag: ["v4.7.2"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS
-    runs-on: macos-latest
+    runs-on: macos-13
     env:
       BUILD_TAG: ${{ matrix.tag }}
     steps:
@@ -147,11 +147,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-
-      - uses: numworks/setup-msys2@v1
-        with:
-          update: true
-          path-type: inherit
+      
+      - uses: msys2/setup-msys2@v2
 
       - name: Build
         run: |
@@ -164,7 +161,8 @@ jobs:
 
       - name: Tarball
         id: tarball
-        run: msys2do BUILD_TAG=${{ env.BUILD_TAG }} ./tarball.sh
+        shell: msys2 {0}
+        run: ./tarball.sh
 
       - name: Upload
         uses: actions/github-script@0.9.0

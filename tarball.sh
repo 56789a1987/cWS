@@ -8,5 +8,5 @@ if [ $? -ne 0 ]; then
   echo "failed to make tarball $TARNAME"
   exit 1;
 else
-  echo "::set-output name=asset_name::$TARNAME"
+  echo "asset_name=$TARNAME" >> $GITHUB_OUTPUT
 fi
