@@ -8,7 +8,7 @@ if [ -e targets/headers ]; then
 fi
 mkdir -p targets/headers
 
-for version in v18.20.0 v20.18.0 v21.7.0 v22.10.0; do
+for version in v18.20.0 v20.18.0 v22.10.0 v23.0.0; do
     major=$(echo $version | grep -o -E "[0-9]+" | head -n 1)
     header=targets/headers/$major
     extract=targets/node-$version

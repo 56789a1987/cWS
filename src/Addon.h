@@ -20,16 +20,16 @@
   #include "headers/20/base_object-inl.h"
 #endif
 
-#if NODE_MAJOR_VERSION==21
-  #include "headers/21/tcp_wrap.h"
-  #include "headers/21/crypto/crypto_tls.h"
-  #include "headers/21/base_object-inl.h"
-#endif
-
 #if NODE_MAJOR_VERSION==22
   #include "headers/22/tcp_wrap.h"
   #include "headers/22/crypto/crypto_tls.h"
   #include "headers/22/base_object-inl.h"
+#endif
+
+#if NODE_MAJOR_VERSION==23
+  #include "headers/23/tcp_wrap.h"
+  #include "headers/23/crypto/crypto_tls.h"
+  #include "headers/23/base_object-inl.h"
 #endif
 
 using BaseObject = node::BaseObject;
