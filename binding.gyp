@@ -34,7 +34,7 @@
                 }],
                 ['OS=="mac"', {
                     'xcode_settings': {
-                        'MACOSX_DEPLOYMENT_TARGET': '10.13',
+                        'MACOSX_DEPLOYMENT_TARGET': '10.15',
                         'CLANG_CXX_LANGUAGE_STANDARD': 'c++20',
                         'CLANG_CXX_LIBRARY': 'libc++',
                         'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
