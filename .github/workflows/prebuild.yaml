@@ -17,14 +17,14 @@ jobs:
     strategy:
       matrix:
         node: [18, 20, 21, 22]
-        tag: ["v4.7.2"]
+        tag: ["v4.7.3"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     env:
       BUILD_TAG: ${{ matrix.tag }}
       UV_USE_IO_URING: 0
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -44,7 +44,7 @@ jobs:
         run: ./tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@7
         with:
           script: |
             const fs = require("fs");
@@ -77,13 +77,13 @@ jobs:
     strategy:
       matrix:
         node: [18, 20, 21, 22]
-        tag: ["v4.7.2"]
+        tag: ["v4.7.3"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS
     runs-on: macos-13
     env:
       BUILD_TAG: ${{ matrix.tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -103,7 +103,7 @@ jobs:
         run: ./tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@7
         with:
           script: |
             const fs = require("fs");
@@ -136,13 +136,13 @@ jobs:
     strategy:
       matrix:
         node: [18, 20, 21, 22]
-        tag: ["v4.7.2"]
+        tag: ["v4.7.3"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     env:
       BUILD_TAG: ${{ matrix.tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
@@ -168,7 +168,7 @@ jobs:
         run: ./tarball.sh
 
       - name: Upload
-        uses: actions/github-script@0.9.0
+        uses: actions/github-script@7
         with:
           script: |
             const fs = require("fs");
