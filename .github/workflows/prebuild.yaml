@@ -44,7 +44,7 @@ jobs:
         run: ./tarball.sh
 
       - name: Upload
-        uses: actions/github-script@7
+        uses: actions/github-script@0.9.0
         with:
           script: |
             const fs = require("fs");
@@ -103,7 +103,7 @@ jobs:
         run: ./tarball.sh
 
       - name: Upload
-        uses: actions/github-script@7
+        uses: actions/github-script@0.9.0
         with:
           script: |
             const fs = require("fs");
@@ -168,7 +168,7 @@ jobs:
         run: ./tarball.sh
 
       - name: Upload
-        uses: actions/github-script@7
+        uses: actions/github-script@0.9.0
         with:
           script: |
             const fs = require("fs");
