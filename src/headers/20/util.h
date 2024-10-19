@@ -24,6 +24,7 @@
 
 #if defined(NODE_WANT_INTERNALS) && NODE_WANT_INTERNALS
 
+#include "uv.h"
 #include "v8.h"
 
 #include "node.h"
@@ -145,9 +146,9 @@ void DumpJavaScriptBacktrace(FILE* fp);
   do {                                                                         \
     /* Make sure that this struct does not end up in inline code, but      */  \
     /* rather in a read-only data section when modifying this code.        */  \
-    static const node::AssertionInfo args = {                                  \
+    static const node::AssertionInfo error_and_abort_args = {                  \
         __FILE__ ":" STRINGIFY(__LINE__), #expr, PRETTY_FUNCTION_NAME};        \
-    node::Assert(args);                                                        \
+    node::Assert(error_and_abort_args);                                        \
     /* `node::Assert` doesn't return. Add an [[noreturn]] abort() here to  */  \
     /* make the compiler happy about no return value in the caller         */  \
     /* function when calling ERROR_AND_ABORT.                              */  \
@@ -161,7 +162,11 @@ void DumpJavaScriptBacktrace(FILE* fp);
 #else
 #define LIKELY(expr) expr
 #define UNLIKELY(expr) expr
+#if defined(_MSC_VER)
+#define PRETTY_FUNCTION_NAME __FUNCSIG__
+#else
 #define PRETTY_FUNCTION_NAME ""
+#endif
 #endif
 
 #define STRINGIFY_(x) #x
@@ -212,7 +217,7 @@ void DumpJavaScriptBacktrace(FILE* fp);
 #define UNREACHABLE(...)                                                      \
   ERROR_AND_ABORT("Unreachable code reached" __VA_OPT__(": ") __VA_ARGS__)
 
-// ECMA262 20.1.2.6 Number.MAX_SAFE_INTEGER (2^53-1)
+// ECMA-262, 15th edition, 21.1.2.6. Number.MAX_SAFE_INTEGER (2^53-1)
 constexpr int64_t kMaxSafeJsInteger = 9007199254740991;
 
 inline bool IsSafeJsInt(v8::Local<v8::Value> v);
@@ -1017,6 +1022,13 @@ std::string DetermineSpecificErrorType(Environment* env,
                                        v8::Local<v8::Value> input);
 
 v8::Maybe<int32_t> GetValidatedFd(Environment* env, v8::Local<v8::Value> input);
+v8::Maybe<int> GetValidFileMode(Environment* env,
+                                v8::Local<v8::Value> input,
+                                uv_fs_type type);
+
+// Returns true if OS==Windows and filename ends in .bat or .cmd,
+// case insensitive.
+inline bool IsWindowsBatchFile(const char* filename);
 
 }  // namespace node
 

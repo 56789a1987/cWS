@@ -430,6 +430,14 @@ inline builtins::BuiltinLoader* Environment::builtin_loader() {
   return &builtin_loader_;
 }
 
+inline const EmbedderPreloadCallback& Environment::embedder_preload() const {
+  return embedder_preload_;
+}
+
+inline void Environment::set_embedder_preload(EmbedderPreloadCallback fn) {
+  embedder_preload_ = std::move(fn);
+}
+
 inline double Environment::new_async_id() {
   async_hooks()->async_id_fields()[AsyncHooks::kAsyncIdCounter] += 1;
   return async_hooks()->async_id_fields()[AsyncHooks::kAsyncIdCounter];
@@ -568,11 +576,6 @@ inline std::shared_ptr<PerIsolateOptions> IsolateData::options() {
   return options_;
 }
 
-inline void IsolateData::set_options(
-    std::shared_ptr<PerIsolateOptions> options) {
-  options_ = std::move(options);
-}
-
 template <typename Fn>
 void Environment::SetImmediate(Fn&& cb, CallbackFlags::Flags flags) {
   auto callback = native_immediates_.CreateCallback(std::move(cb), flags);
@@ -656,6 +659,10 @@ inline bool Environment::should_create_inspector() const {
          !options_->test_runner && !options_->watch_mode;
 }
 
+inline bool Environment::should_wait_for_inspector_frontend() const {
+  return (flags_ & EnvironmentFlags::kNoWaitForInspectorFrontend) == 0;
+}
+
 inline bool Environment::tracks_unmanaged_fds() const {
   return flags_ & EnvironmentFlags::kTrackUnmanagedFds;
 }
@@ -667,6 +674,10 @@ inline bool Environment::hide_console_windows() const {
 inline bool Environment::no_global_search_paths() const {
   return (flags_ & EnvironmentFlags::kNoGlobalSearchPaths) ||
          !options_->global_search_paths;
+}
+
+inline bool Environment::should_start_debug_signal_handler() const {
+  return (flags_ & EnvironmentFlags::kNoStartDebugSignalHandler) == 0;
 }
 
 inline bool Environment::no_browser_globals() const {

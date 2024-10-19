@@ -9,6 +9,7 @@
 #include "permission/fs_permission.h"
 #include "permission/inspector_permission.h"
 #include "permission/permission_base.h"
+#include "permission/wasi_permission.h"
 #include "permission/worker_permission.h"
 #include "v8.h"
 
@@ -27,7 +28,7 @@ namespace permission {
 
 #define THROW_IF_INSUFFICIENT_PERMISSIONS(env, perm_, resource_, ...)          \
   do {                                                                         \
-    if (UNLIKELY(!(env)->permission()->is_granted(perm_, resource_))) {        \
+    if (!env->permission()->is_granted(env, perm_, resource_)) [[unlikely]] {  \
       node::permission::Permission::ThrowAccessDenied(                         \
           (env), perm_, resource_);                                            \
       return __VA_ARGS__;                                                      \
@@ -37,7 +38,7 @@ namespace permission {
 #define ASYNC_THROW_IF_INSUFFICIENT_PERMISSIONS(                               \
     env, wrap, perm_, resource_, ...)                                          \
   do {                                                                         \
-    if (UNLIKELY(!(env)->permission()->is_granted(perm_, resource_))) {        \
+    if (!env->permission()->is_granted(env, perm_, resource_)) [[unlikely]] {  \
       node::permission::Permission::AsyncThrowAccessDenied(                    \
           (env), wrap, perm_, resource_);                                      \
       return __VA_ARGS__;                                                      \
@@ -48,10 +49,13 @@ class Permission {
  public:
   Permission();
 
-  FORCE_INLINE bool is_granted(const PermissionScope permission,
+  FORCE_INLINE bool is_granted(Environment* env,
+                               const PermissionScope permission,
                                const std::string_view& res = "") const {
-    if (LIKELY(!enabled_)) return true;
-    return is_scope_granted(permission, res);
+    if (!enabled_) [[likely]] {
+      return true;
+    }
+    return is_scope_granted(env, permission, res);
   }
 
   FORCE_INLINE bool enabled() const { return enabled_; }
@@ -73,11 +77,12 @@ class Permission {
   void EnablePermissions();
 
  private:
-  COLD_NOINLINE bool is_scope_granted(const PermissionScope permission,
+  COLD_NOINLINE bool is_scope_granted(Environment* env,
+                                      const PermissionScope permission,
                                       const std::string_view& res = "") const {
     auto perm_node = nodes_.find(permission);
     if (perm_node != nodes_.end()) {
-      return perm_node->second->is_granted(permission, res);
+      return perm_node->second->is_granted(env, permission, res);
     }
     return false;
   }

@@ -22,6 +22,11 @@
   V(contextify_context_private_symbol, "node:contextify:context")              \
   V(decorated_private_symbol, "node:decorated")                                \
   V(host_defined_option_symbol, "node:host_defined_option_symbol")             \
+  V(module_source_private_symbol, "node:module_source")                        \
+  V(module_export_names_private_symbol, "node:module_export_names")            \
+  V(module_circular_visited_private_symbol, "node:module_circular_visited")    \
+  V(module_export_private_symbol, "node:module_export")                        \
+  V(module_parent_private_symbol, "node:module_parent")                        \
   V(napi_type_tag, "node:napi:type_tag")                                       \
   V(napi_wrapper, "node:napi:wrapper")                                         \
   V(untransferable_object_private_symbol, "node:untransferableObject")         \
@@ -37,6 +42,7 @@
   V(handle_onclose_symbol, "handle_onclose")                                   \
   V(no_message_symbol, "no_message_symbol")                                    \
   V(messaging_deserialize_symbol, "messaging_deserialize_symbol")              \
+  V(imported_cjs_symbol, "imported_cjs_symbol")                                \
   V(messaging_transfer_symbol, "messaging_transfer_symbol")                    \
   V(messaging_clone_symbol, "messaging_clone_symbol")                          \
   V(messaging_transfer_list_symbol, "messaging_transfer_list_symbol")          \
@@ -45,6 +51,8 @@
   V(onpskexchange_symbol, "onpskexchange")                                     \
   V(resource_symbol, "resource_symbol")                                        \
   V(trigger_async_id_symbol, "trigger_async_id_symbol")                        \
+  V(source_text_module_default_hdo, "source_text_module_default_hdo")          \
+  V(vm_context_no_contextify, "vm_context_no_contextify")                      \
   V(vm_dynamic_import_default_internal, "vm_dynamic_import_default_internal")  \
   V(vm_dynamic_import_main_context_default,                                    \
     "vm_dynamic_import_main_context_default")                                  \
@@ -54,6 +62,8 @@
 // Strings are per-isolate primitives but Environment proxies them
 // for the sake of convenience.  Strings should be ASCII-only.
 #define PER_ISOLATE_STRING_PROPERTIES(V)                                       \
+  V(__filename_string, "__filename")                                           \
+  V(__dirname_string, "__dirname")                                             \
   V(ack_string, "ack")                                                         \
   V(address_string, "address")                                                 \
   V(aliases_string, "aliases")                                                 \
@@ -124,6 +134,8 @@
   V(env_var_settings_string, "envVarSettings")                                 \
   V(errno_string, "errno")                                                     \
   V(error_string, "error")                                                     \
+  V(events, "events")                                                          \
+  V(events_waiting, "eventsWaiting")                                           \
   V(exchange_string, "exchange")                                               \
   V(expire_string, "expire")                                                   \
   V(exponent_string, "exponent")                                               \
@@ -193,6 +205,7 @@
   V(kind_string, "kind")                                                       \
   V(length_string, "length")                                                   \
   V(library_string, "library")                                                 \
+  V(loop_count, "loopCount")                                                   \
   V(mac_string, "mac")                                                         \
   V(max_buffer_string, "maxBuffer")                                            \
   V(max_concurrent_streams_string, "maxConcurrentStreams")                     \
@@ -417,7 +430,9 @@
   V(immediate_callback_function, v8::Function)                                 \
   V(inspector_console_extension_installer, v8::Function)                       \
   V(inspector_disable_async_hooks, v8::Function)                               \
+  V(inspector_disable_network_tracking, v8::Function)                          \
   V(inspector_enable_async_hooks, v8::Function)                                \
+  V(inspector_enable_network_tracking, v8::Function)                           \
   V(maybe_cache_generated_source_map, v8::Function)                            \
   V(messaging_deserialize_create_object, v8::Function)                         \
   V(message_port, v8::Object)                                                  \
@@ -425,6 +440,7 @@
   V(performance_entry_callback, v8::Function)                                  \
   V(prepare_stack_trace_callback, v8::Function)                                \
   V(process_object, v8::Object)                                                \
+  V(process_emit_warning_sync, v8::Function)                                   \
   V(primordials, v8::Object)                                                   \
   V(primordials_safe_map_prototype_object, v8::Object)                         \
   V(primordials_safe_set_prototype_object, v8::Object)                         \

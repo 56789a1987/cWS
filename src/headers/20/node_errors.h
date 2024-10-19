@@ -92,6 +92,7 @@ void OOMErrorHandler(const char* location, const v8::OOMDetails& details);
   V(ERR_MODULE_NOT_FOUND, Error)                                               \
   V(ERR_NON_CONTEXT_AWARE_DISABLED, Error)                                     \
   V(ERR_OUT_OF_RANGE, RangeError)                                              \
+  V(ERR_REQUIRE_ASYNC_MODULE, Error)                                           \
   V(ERR_SCRIPT_EXECUTION_INTERRUPTED, Error)                                   \
   V(ERR_SCRIPT_EXECUTION_TIMEOUT, Error)                                       \
   V(ERR_STRING_TOO_LONG, Error)                                                \
@@ -105,7 +106,7 @@ void OOMErrorHandler(const char* location, const v8::OOMDetails& details);
 
 #define V(code, type)                                                          \
   template <typename... Args>                                                  \
-  inline v8::Local<v8::Value> code(                                            \
+  inline v8::Local<v8::Object> code(                                           \
       v8::Isolate* isolate, const char* format, Args&&... args) {              \
     std::string message = SPrintF(format, std::forward<Args>(args)...);        \
     v8::Local<v8::String> js_code = OneByteString(isolate, #code);             \
@@ -192,6 +193,10 @@ ERRORS_WITH_CODE(V)
     "creating Workers")                                                        \
   V(ERR_NON_CONTEXT_AWARE_DISABLED,                                            \
     "Loading non context-aware native addons has been disabled")               \
+  V(ERR_REQUIRE_ASYNC_MODULE,                                                  \
+    "require() cannot be used on an ESM graph with top-level await. Use "      \
+    "import() instead. To see where the top-level await comes from, use "      \
+    "--experimental-print-required-tla.")                                      \
   V(ERR_SCRIPT_EXECUTION_INTERRUPTED,                                          \
     "Script execution was interrupted by `SIGINT`")                            \
   V(ERR_TLS_PSK_SET_IDENTIY_HINT_FAILED, "Failed to set PSK identity hint")    \
@@ -201,17 +206,15 @@ ERRORS_WITH_CODE(V)
     "Accessing Object.prototype.__proto__ has been "                           \
     "disallowed with --disable-proto=throw")
 
-#define V(code, message)                                                     \
-  inline v8::Local<v8::Value> code(v8::Isolate* isolate) {                   \
-    return code(isolate, message);                                           \
-  }                                                                          \
-  inline void THROW_ ## code(v8::Isolate* isolate) {                         \
-    isolate->ThrowException(code(isolate, message));                         \
-  }                                                                          \
-  inline void THROW_ ## code(Environment* env) {                             \
-    THROW_ ## code(env->isolate());                                          \
-  }
-  PREDEFINED_ERROR_MESSAGES(V)
+#define V(code, message)                                                       \
+  inline v8::Local<v8::Object> code(v8::Isolate* isolate) {                    \
+    return code(isolate, message);                                             \
+  }                                                                            \
+  inline void THROW_##code(v8::Isolate* isolate) {                             \
+    isolate->ThrowException(code(isolate, message));                           \
+  }                                                                            \
+  inline void THROW_##code(Environment* env) { THROW_##code(env->isolate()); }
+PREDEFINED_ERROR_MESSAGES(V)
 #undef V
 
 // Errors with predefined non-static messages
@@ -223,7 +226,7 @@ inline void THROW_ERR_SCRIPT_EXECUTION_TIMEOUT(Environment* env,
   THROW_ERR_SCRIPT_EXECUTION_TIMEOUT(env, message.str().c_str());
 }
 
-inline v8::Local<v8::Value> ERR_BUFFER_TOO_LARGE(v8::Isolate* isolate) {
+inline v8::Local<v8::Object> ERR_BUFFER_TOO_LARGE(v8::Isolate* isolate) {
   char message[128];
   snprintf(message, sizeof(message),
       "Cannot create a Buffer larger than 0x%zx bytes",
@@ -231,7 +234,7 @@ inline v8::Local<v8::Value> ERR_BUFFER_TOO_LARGE(v8::Isolate* isolate) {
   return ERR_BUFFER_TOO_LARGE(isolate, message);
 }
 
-inline v8::Local<v8::Value> ERR_STRING_TOO_LONG(v8::Isolate* isolate) {
+inline v8::Local<v8::Object> ERR_STRING_TOO_LONG(v8::Isolate* isolate) {
   char message[128];
   snprintf(message, sizeof(message),
       "Cannot create a string longer than 0x%x characters",
