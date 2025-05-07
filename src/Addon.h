@@ -32,6 +32,12 @@
   #include "headers/23/base_object-inl.h"
 #endif
 
+#if NODE_MAJOR_VERSION==24
+  #include "headers/24/tcp_wrap.h"
+  #include "headers/24/crypto/crypto_tls.h"
+  #include "headers/24/base_object-inl.h"
+#endif
+
 using BaseObject = node::BaseObject;
 
 using TLSWrap = node::crypto::TLSWrap;
@@ -593,14 +599,9 @@ void getSSLContext(const FunctionCallbackInfo<Value> &args) {
     Local<Context> context = isolate->GetCurrentContext();
     Local<Object> obj = args[0]->ToObject(context).ToLocalChecked();
 
-    #if NODE_MAJOR_VERSION < 10
-      Local<Value> ext = obj->Get(String::NewFromUtf8(isolate, "_external"));
-      args.GetReturnValue().Set(ext);
-    #else
-      TLSWrapSSLGetter* tw;
-      ASSIGN_OR_RETURN_UNWRAP(&tw, obj);
-      tw->setSSL(args);
-    #endif
+    TLSWrapSSLGetter* tw;
+    ASSIGN_OR_RETURN_UNWRAP(&tw, obj);
+    tw->setSSL(args);
 }
 
 void setNoop(const FunctionCallbackInfo<Value> &args) {

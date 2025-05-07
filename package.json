@@ -7,6 +7,7 @@
   "scripts": {
     "lint": "tslint -c tslint.json 'lib/**/*.ts'",
     "test": "nyc mocha './tests/**/*.test.ts' --exit",
+    "test-ssl": "nyc mocha './tests/**/*.test.ts' --ssl --exit",
     "clean": "rimraf dist/bindings/*",
     "install": "prebuild-install || node-gyp rebuild",
     "build-ts": "rimraf dist/*.js && rimraf dist/*.ts && npm run lint && tsc",

@@ -4,6 +4,7 @@ build/
 targets/
 coverage/
 excludes/
+downloads/
 node_modules/
 
 *.node

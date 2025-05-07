@@ -49,8 +49,9 @@ async function createWSServer(ssl: boolean, server?: Server | HttpsServer): Prom
 
 // NOTE: SSL test often fails on different minor versions of Node.js
 // Only test it if necessary
+const sslTests = process.argv.includes('--ssl') ? ['SSL'] : [];
 
-[/* 'SSL', */'Non-SSL'].forEach((type: string): void => {
+[...sslTests, 'Non-SSL'].forEach((type: string): void => {
   const isSSL: boolean = type === 'SSL';
   const connectionUrl: string = isSSL ? `wss://localhost:${secureServerPort}` : `ws://localhost:${serverPort}`;
 
