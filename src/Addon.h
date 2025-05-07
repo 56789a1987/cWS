@@ -112,26 +112,14 @@ class NativeString {
       length = node::Buffer::Length(value);
     } else if (value->IsTypedArray()) {
       Local<ArrayBufferView> arrayBufferView = Local<ArrayBufferView>::Cast(value);
-      #if V8_MAJOR_VERSION >= 8
-        shared_ptr<BackingStore> backingStore = arrayBufferView->Buffer()->GetBackingStore();
-        length = backingStore->ByteLength();
-        data = (char *)backingStore->Data();
-      #else
-        ArrayBuffer::Contents contents = arrayBufferView->Buffer()->GetContents();
-        length = contents.ByteLength();
-        data = (char *)contents.Data();
-      #endif
+      shared_ptr<BackingStore> backingStore = arrayBufferView->Buffer()->GetBackingStore();
+      length = backingStore->ByteLength();
+      data = (char *)backingStore->Data();
     } else if (value->IsArrayBuffer()) {
       Local<ArrayBuffer> arrayBuffer = Local<ArrayBuffer>::Cast(value);
-      #if V8_MAJOR_VERSION >= 8
-        shared_ptr<BackingStore> backingStore = arrayBuffer->GetBackingStore();
-        length = backingStore->ByteLength();
-        data = (char *)backingStore->Data();
-      #else
-        ArrayBuffer::Contents contents = arrayBuffer->GetContents();
-        length = contents.ByteLength();
-        data = (char *)contents.Data();
-      #endif
+      shared_ptr<BackingStore> backingStore = arrayBuffer->GetBackingStore();
+      length = backingStore->ByteLength();
+      data = (char *)backingStore->Data();
     } else {
       static char empty[] = "";
       data = empty;
@@ -186,13 +174,9 @@ inline Local<Value> wrapMessage(const char *message, size_t length,
                                 cWS::OpCode opCode, Isolate *isolate) {
 
   if (opCode == cWS::OpCode::BINARY) {
-    #if V8_MAJOR_VERSION >= 8
-      unique_ptr<BackingStore> backingStore =
-        ArrayBuffer::NewBackingStore((char *)message, length, BackingStore::EmptyDeleter, nullptr);
-      return (Local<Value>)ArrayBuffer::New(isolate, move(backingStore));
-    #else
-      return (Local<Value>)ArrayBuffer::New(isolate, (char *)message, length);
-    #endif
+    unique_ptr<BackingStore> backingStore =
+      ArrayBuffer::NewBackingStore((char *)message, length, BackingStore::EmptyDeleter, nullptr);
+    return (Local<Value>)ArrayBuffer::New(isolate, move(backingStore));
   }
 
   return (Local<Value>)String::NewFromUtf8(isolate, message, NewStringType::kNormal, length).ToLocalChecked();
