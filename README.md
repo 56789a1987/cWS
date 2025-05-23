@@ -16,24 +16,25 @@
 * This repository is a fork of [uWebSockets v0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) therefore has two licence [MIT](https://github.com/ClusterWS/uWS/blob/master/LICENSE) and [ZLIB](https://github.com/ClusterWS/uWS/blob/master/src/LICENSE)
 
 * Due to [a change in libuv](https://github.com/libuv/libuv/pull/3952),
-  if you're running cWS on Linux and using these versions of Node (>= 18.18, >= 20.3 && < 20.11.1),
+  if you're running cWS on Linux with Node >= 18.18 or >= 20.3 && < 20.11.1,
   set the environment variable `UV_USE_IO_URING=0` before starting the application.
 
 ## Supported Node Versions (SSL)
 
 This table is true if you run ssl directly with `cws` (`Node.js`). In case if you use proxy for example `nginx`, `cws` can be run on bigger coverage.
 
-| CWS Version | Node 12 | Node 13 | Node 14 | Node 16         | Node 18         | Node 19 | Node 20 | Node 21 | Node 22 | Node 23 |
-|-------------|---------|---------|---------|-----------------|-----------------|---------|---------|---------|---------|---------|
-| 4.8.0       |    X    |    X    |    X    |    X            | >=18.20         |    X    | >=20.18 |    X    | >=22.10 | >=23.0  |
-| 4.7.0       |    X    |    X    |    X    |    X            | >=18.20         |    X    | >=20.12 | >=21.7  | >=22.0  |    X    |
-| 4.6.0       |    X    |    X    |    X    | >=16.20         | >=18.18         |    X    | >=20.9  | >=21.1  |    X    |    X    |
-| 4.5.0       |    X    |    X    | >=14.21 | >=16.20         | >=18.18         |    X    | >=20.7  |    X    |    X    |    X    |
-| 4.4.0       |    X    |    X    | >=14.20 | >=16.18         | >=18.13         |    X    | >=20.0  |    X    |    X    |    X    |
-| 4.3.0       | >=12.18 |    X    | >=14.5  | >=16.18         | >=18.13         | >=19.2  |    X    |    X    |    X    |    X    |
-| 4.2.0       | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 | >=19.0  |    X    |    X    |    X    |    X    |
-| 4.1.0       | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 |    X    |    X    |    X    |    X    |    X    |
-| 4.0.0       | >=12.18 |    X    | >=14.5  | >=16.0 & <16.18 |    X            |    X    |    X    |    X    |    X    |    X    |
+| CWS Version | Node 14 | Node 16         | Node 18         | Node 19 | Node 20 | Node 21 | Node 22 | Node 23 | Node 24 |
+|-------------|---------|-----------------|-----------------|---------|---------|---------|---------|---------|---------|
+| 4.9.0       |    X    |    X            | >=18.20         |    X    | >=20.19 |    X    | >=22.16 |    X    | >=24.1  |
+| 4.8.0       |    X    |    X            | >=18.20         |    X    | >=20.18 |    X    | >=22.10 | >=23.0  |    X    |
+| 4.7.0       |    X    |    X            | >=18.20         |    X    | >=20.12 | >=21.7  | >=22.0  |    X    |    X    |
+| 4.6.0       |    X    | >=16.20         | >=18.18         |    X    | >=20.9  | >=21.1  |    X    |    X    |    X    |
+| 4.5.0       | >=14.21 | >=16.20         | >=18.18         |    X    | >=20.7  |    X    |    X    |    X    |    X    |
+| 4.4.0       | >=14.20 | >=16.18         | >=18.13         |    X    | >=20.0  |    X    |    X    |    X    |    X    |
+| 4.3.0       | >=14.5  | >=16.18         | >=18.13         | >=19.2  |    X    |    X    |    X    |    X    |    X    |
+| 4.2.0       | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 | >=19.0  |    X    |    X    |    X    |    X    |    X    |
+| 4.1.0       | >=14.5  | >=16.0 & <16.18 | >=18.0 & <18.13 |    X    |    X    |    X    |    X    |    X    |    X    |
+| 4.0.0       | >=14.5  | >=16.0 & <16.18 |    X            |    X    |    X    |    X    |    X    |    X    |    X    |
 
 ## Documentation
 
