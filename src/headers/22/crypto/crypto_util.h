@@ -38,6 +38,7 @@
 #include <vector>
 
 namespace node {
+
 namespace crypto {
 // Currently known sizes of commonly used OpenSSL struct sizes.
 // OpenSSL considers it's various structs to be opaque and the
@@ -53,34 +54,6 @@ constexpr size_t kSizeOf_EVP_PKEY = 72;
 constexpr size_t kSizeOf_EVP_PKEY_CTX = 80;
 constexpr size_t kSizeOf_HMAC_CTX = 32;
 
-// Define smart pointers for the most commonly used OpenSSL types:
-using X509Pointer = ncrypto::X509Pointer;
-using BIOPointer = ncrypto::BIOPointer;
-using SSLCtxPointer = ncrypto::SSLCtxPointer;
-using SSLSessionPointer = ncrypto::SSLSessionPointer;
-using SSLPointer = ncrypto::SSLPointer;
-using PKCS8Pointer = ncrypto::PKCS8Pointer;
-using EVPKeyPointer = ncrypto::EVPKeyPointer;
-using EVPKeyCtxPointer = ncrypto::EVPKeyCtxPointer;
-using EVPMDCtxPointer = ncrypto::EVPMDCtxPointer;
-using RSAPointer = ncrypto::RSAPointer;
-using ECPointer = ncrypto::ECPointer;
-using BignumPointer = ncrypto::BignumPointer;
-using BignumCtxPointer = ncrypto::BignumCtxPointer;
-using NetscapeSPKIPointer = ncrypto::NetscapeSPKIPointer;
-using ECGroupPointer = ncrypto::ECGroupPointer;
-using ECPointPointer = ncrypto::ECPointPointer;
-using ECKeyPointer = ncrypto::ECKeyPointer;
-using DHPointer = ncrypto::DHPointer;
-using ECDSASigPointer = ncrypto::ECDSASigPointer;
-using HMACCtxPointer = ncrypto::HMACCtxPointer;
-using CipherCtxPointer = ncrypto::CipherCtxPointer;
-using DsaPointer = ncrypto::DSAPointer;
-using DsaSigPointer = ncrypto::DSASigPointer;
-
-using ClearErrorOnReturn = ncrypto::ClearErrorOnReturn;
-using MarkPopErrorOnReturn = ncrypto::MarkPopErrorOnReturn;
-
 bool ProcessFipsOptions();
 
 bool InitCryptoOnce(v8::Isolate* isolate);
@@ -89,6 +62,7 @@ void InitCryptoOnce();
 void InitCrypto(v8::Local<v8::Object> target);
 
 extern void UseExtraCaCerts(const std::string& file);
+void CleanupCachedRootCertificates();
 
 int PasswordCallback(char* buf, int size, int rwflag, void* u);
 
@@ -261,8 +235,8 @@ class ByteSource {
 
   operator bool() const { return data_ != nullptr; }
 
-  BignumPointer ToBN() const {
-    return BignumPointer(data<unsigned char>(), size());
+  ncrypto::BignumPointer ToBN() const {
+    return ncrypto::BignumPointer(data<unsigned char>(), size());
   }
 
   // Creates a v8::BackingStore that takes over responsibility for
@@ -297,7 +271,7 @@ class ByteSource {
   static ByteSource FromBuffer(v8::Local<v8::Value> buffer,
                                bool ntc = false);
 
-  static ByteSource FromBIO(const BIOPointer& bio);
+  static ByteSource FromBIO(const ncrypto::BIOPointer& bio);
 
   static ByteSource NullTerminatedCopy(Environment* env,
                                        v8::Local<v8::Value> value);
@@ -493,9 +467,11 @@ class DeriveBitsJob final : public CryptoJob<DeriveBitsTraits> {
             std::move(params)) {}
 
   void DoThreadPoolWork() override {
-    if (!DeriveBitsTraits::DeriveBits(
-            AsyncWrap::env(),
-            *CryptoJob<DeriveBitsTraits>::params(), &out_)) {
+    ncrypto::ClearErrorOnReturn clear_error_on_return;
+    if (!DeriveBitsTraits::DeriveBits(AsyncWrap::env(),
+                                      *CryptoJob<DeriveBitsTraits>::params(),
+                                      &out_,
+                                      this->mode())) {
       CryptoErrorStore* errors = CryptoJob<DeriveBitsTraits>::errors();
       errors->Capture();
       if (errors->Empty())
@@ -547,7 +523,8 @@ void ThrowCryptoError(Environment* env,
 
 class CipherPushContext {
  public:
-  inline explicit CipherPushContext(Environment* env) : env_(env) {}
+  inline explicit CipherPushContext(Environment* env)
+      : list_(env->isolate()), env_(env) {}
 
   inline void push_back(const char* str) {
     list_.emplace_back(OneByteString(env_->isolate(), str));
@@ -558,7 +535,7 @@ class CipherPushContext {
   }
 
  private:
-  std::vector<v8::Local<v8::Value>> list_;
+  v8::LocalVector<v8::Value> list_;
   Environment* env_;
 };
 
@@ -689,12 +666,22 @@ class ArrayBufferOrViewContents {
     return std::move(buf).release(size());
   }
 
+  inline ncrypto::DataPointer ToDataPointer() const {
+    if (empty()) return {};
+    if (auto dp = ncrypto::DataPointer::Alloc(size())) {
+      memcpy(dp.get(), data(), size());
+      return dp;
+    }
+    return {};
+  }
+
   template <typename M>
   void CopyTo(M* dest, size_t len) const {
     static_assert(sizeof(M) == 1, "sizeof(M) must equal 1");
     len = std::min(len, size());
-    if (len > 0 && data() != nullptr)
+    if (len > 0 && data() != nullptr) {
       memcpy(dest, data(), len);
+    }
   }
 
  private:
@@ -723,7 +710,8 @@ v8::Maybe<void> SetEncodedValue(Environment* env,
                                 const BIGNUM* bn,
                                 int size = 0);
 
-bool SetRsaOaepLabel(const EVPKeyCtxPointer& rsa, const ByteSource& label);
+bool SetRsaOaepLabel(const ncrypto::EVPKeyCtxPointer& rsa,
+                     const ByteSource& label);
 
 namespace Util {
 void Initialize(Environment* env, v8::Local<v8::Object> target);

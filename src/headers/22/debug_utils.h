@@ -55,6 +55,8 @@ void NODE_EXTERN_PRIVATE FWrite(FILE* file, const std::string& str);
   V(MKSNAPSHOT)                                                                \
   V(SNAPSHOT_SERDES)                                                           \
   V(PERMISSION_MODEL)                                                          \
+  V(PLATFORM_MINIMAL)                                                          \
+  V(PLATFORM_VERBOSE)                                                          \
   V(QUIC)
 
 enum class DebugCategory : unsigned int {
@@ -74,10 +76,10 @@ class NODE_EXTERN_PRIVATE EnabledDebugList {
     return enabled_[static_cast<unsigned int>(category)];
   }
 
-  // Uses NODE_DEBUG_NATIVE to initialize the categories. The env_vars variable
+  // Uses NODE_DEBUG_NATIVE to initialize the categories. env->env_vars()
   // is parsed if it is not a nullptr, otherwise the system environment
   // variables are parsed.
-  void Parse(std::shared_ptr<KVStore> env_vars);
+  void Parse(Environment* env);
 
  private:
   // Enable all categories matching cats.
