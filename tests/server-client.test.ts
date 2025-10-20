@@ -14,7 +14,7 @@ const secureServerPort: number = 3001;
 // registerHandler("crash_log.txt");
 
 async function createWSServer(ssl: boolean, server?: Server | HttpsServer): Promise<WebSocketServer> {
-  return new Promise((res: any): void => {
+  return new Promise<WebSocketServer>(res => {
     if (server) {
       return res(new WebSocket.Server({ server }));
     }
@@ -38,11 +38,9 @@ async function createWSServer(ssl: boolean, server?: Server | HttpsServer): Prom
         (wsServer as any)._close_(cb);
       };
 
-      httpsServer.listen(secureServerPort, (): void => {
-        res(wsServer);
-      });
+      httpsServer.listen(secureServerPort, () => res(wsServer));
     } else {
-      const wsServer: WebSocketServer = new WebSocket.Server({ port: serverPort }, (): void => res(wsServer));
+      const wsServer: WebSocketServer = new WebSocket.Server({ port: serverPort }, () => res(wsServer));
     }
   });
 }
