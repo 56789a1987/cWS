@@ -8,12 +8,6 @@
 #define HAVE_OPENSSL 1
 #define NODE_WANT_INTERNALS 1
 
-#if NODE_MAJOR_VERSION==18
-  #include "headers/18/tcp_wrap.h"
-  #include "headers/18/crypto/crypto_tls.h"
-  #include "headers/18/base_object-inl.h"
-#endif
-
 #if NODE_MAJOR_VERSION==20
   #include "headers/20/tcp_wrap.h"
   #include "headers/20/crypto/crypto_tls.h"
@@ -30,6 +24,12 @@
   #include "headers/24/tcp_wrap.h"
   #include "headers/24/crypto/crypto_tls.h"
   #include "headers/24/base_object-inl.h"
+#endif
+
+#if NODE_MAJOR_VERSION==25
+#include "headers/25/tcp_wrap.h"
+#include "headers/25/crypto/crypto_tls.h"
+#include "headers/25/base_object-inl.h"
 #endif
 
 using BaseObject = node::BaseObject;
@@ -77,10 +77,10 @@ void registerCheck(Isolate *isolate) {
   check.data = isolate;
   uv_check_start(&check, [](uv_check_t *check) {
     Isolate *isolate = (Isolate *)check->data;
-    HandleScope hs(isolate);
     if (!noop.IsEmpty()) {
+      HandleScope hs(isolate);
       node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
-                         Local<Function>::New(isolate, noop), 0, nullptr);
+                         Local<Function>::New(isolate, noop), 0, nullptr, {0, 0});
     }
   });
   uv_unref((uv_handle_t *)&check);
@@ -237,7 +237,7 @@ void sendCallback(cWS::WebSocket<isServer> *webSocket, void *data,
     HandleScope hs(sc->isolate);
     node::MakeCallback(sc->isolate, sc->isolate->GetCurrentContext()->Global(),
                        Local<Function>::New(sc->isolate, sc->jsCallback), 0,
-                       nullptr);
+                       nullptr, {0, 0});
   }
   sc->jsCallback.Reset();
   delete sc;
@@ -351,7 +351,7 @@ void onConnection(const FunctionCallbackInfo<Value> &args) {
         Local<Value> argv[] = {wrapSocket(webSocket, isolate)};
         node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
                            Local<Function>::New(isolate, *connectionCallback),
-                           1, argv);
+                           1, argv, {0, 0});
       });
 }
 
@@ -397,7 +397,7 @@ void onPing(const FunctionCallbackInfo<Value> &args) {
         wrapMessage(message, length, cWS::OpCode::PING, isolate),
         getDataV8(webSocket, isolate)};
     node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
-                       Local<Function>::New(isolate, *pingCallback), 2, argv);
+                       Local<Function>::New(isolate, *pingCallback), 2, argv, {0, 0});
   });
 }
 
@@ -417,7 +417,7 @@ void onPong(const FunctionCallbackInfo<Value> &args) {
         wrapMessage(message, length, cWS::OpCode::PONG, isolate),
         getDataV8(webSocket, isolate)};
     node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
-                       Local<Function>::New(isolate, *pongCallback), 2, argv);
+                       Local<Function>::New(isolate, *pongCallback), 2, argv, {0, 0});
   });
 }
 
@@ -443,7 +443,7 @@ void onDisconnection(const FunctionCallbackInfo<Value> &args) {
         getDataV8(webSocket, isolate)};
     node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
                        Local<Function>::New(isolate, *disconnectionCallback), 4,
-                       argv);
+                       argv, {0, 0});
   });
 }
 
@@ -461,7 +461,7 @@ void onError(const FunctionCallbackInfo<Value> &args) {
     Local<Value> argv[] = {
         Local<Value>::New(isolate, *(Persistent<Value> *)user)};
     node::MakeCallback(isolate, isolate->GetCurrentContext()->Global(),
-                       Local<Function>::New(isolate, *errorCallback), 1, argv);
+                       Local<Function>::New(isolate, *errorCallback), 1, argv, {0, 0});
 
     ((Persistent<Value> *)user)->Reset();
     delete (Persistent<Value> *)user;

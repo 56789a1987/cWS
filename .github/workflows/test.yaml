@@ -5,7 +5,7 @@ jobs:
   Linux:
     strategy:
       matrix:
-        node: [18, 20, 22, 24]
+        node: [20, 22, 24, 25]
     name: Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     env:
@@ -29,7 +29,7 @@ jobs:
   MacOS:
     strategy:
       matrix:
-        node: [18, 20, 22, 24]
+        node: [20, 22, 24, 25]
     name: Node.js ${{ matrix.node }}, MacOS
     runs-on: macos-latest
     steps:
@@ -51,7 +51,7 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [18, 20, 22, 24]
+        node: [20, 22, 24, 25]
     name: Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     steps:

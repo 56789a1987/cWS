@@ -1,6 +1,6 @@
 {
   "name": "@clusterws/cws",
-  "version": "4.9.0",
+  "version": "4.10.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "description": "cWS - fast C++ WebSocket implementation for Node.js",
@@ -27,7 +27,7 @@
     "url": "https://github.com/56789a1987/cWS"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "prebuild-install": "^7.1.2"

@@ -6,7 +6,7 @@ mkdir -p downloads
 rm -rf downloads/headers
 mkdir -p downloads/headers
 
-for version in v18.20.0 v20.19.0 v22.16.0 v24.1.0; do
+for version in v20.19.0 v22.21.0 v24.11.0 v25.1.0; do
     major=$(echo $version | grep -o -E "[0-9]+" | head -n 1)
     headers_dir=downloads/headers/$major
     extract_dir=downloads/node-$version
@@ -45,6 +45,10 @@ for version in v18.20.0 v20.19.0 v22.16.0 v24.1.0; do
 
     if [ $major -ge 22 ]; then
         cp $extract_dir/deps/ncrypto/*.h $headers_dir/crypto
+    fi
+
+    if [ $major -ge 25 ]; then
+        cp -r $extract_dir/src/quic $headers_dir/quic
     fi
 
     echo Patching header files for node-$version
