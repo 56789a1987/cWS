@@ -1,5 +1,5 @@
 CPP_SHARED := -DUSE_LIBUV -std=c++20 -O3 -I ./src/headers/$$MAJOR -shared -fPIC ./src/Extensions.cpp ./src/Group.cpp ./src/Networking.cpp ./src/Hub.cpp ./src/cSNode.cpp ./src/WebSocket.cpp ./src/HTTPSocket.cpp ./src/Socket.cpp ./src/Epoll.cpp ./src/Addon.cpp
-CPP_OSX := -stdlib=libc++ -mmacosx-version-min=10.13 -undefined dynamic_lookup
+CPP_OSX := -stdlib=libc++ -mmacosx-version-min=13.5 -undefined dynamic_lookup
 
 VER_115 := v20.19.0
 VER_127 := v22.21.0
