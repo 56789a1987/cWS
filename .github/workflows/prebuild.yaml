@@ -79,7 +79,7 @@ jobs:
         node: [20, 22, 24, 25]
         tag: ["v4.10.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS
-    runs-on: macos-13
+    runs-on: macos-15-intel
     env:
       BUILD_TAG: ${{ matrix.tag }}
     steps:
