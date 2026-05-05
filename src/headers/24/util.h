@@ -507,6 +507,8 @@ class MaybeStackBuffer {
   inline std::basic_string_view<T> ToStringView() const {
     return {out(), length()};
   }
+  // This can only be used if the buffer contains path data in UTF8
+  inline std::filesystem::path ToPath() const;
 
  private:
   size_t length_;
@@ -562,6 +564,15 @@ class Utf8Value : public MaybeStackBuffer<char> {
 class TwoByteValue : public MaybeStackBuffer<uint16_t> {
  public:
   explicit TwoByteValue(v8::Isolate* isolate, v8::Local<v8::Value> value);
+
+  inline std::u16string ToU16String() const {
+    return std::u16string(reinterpret_cast<const char16_t*>(out()), length());
+  }
+
+  inline std::u16string_view ToU16StringView() const {
+    return std::u16string_view(reinterpret_cast<const char16_t*>(out()),
+                               length());
+  }
 };
 
 class BufferValue : public MaybeStackBuffer<char> {
@@ -680,6 +691,9 @@ inline v8::Maybe<void> FromV8Array(v8::Local<v8::Context> context,
 
 inline v8::MaybeLocal<v8::Value> ToV8Value(v8::Local<v8::Context> context,
                                            std::string_view str,
+                                           v8::Isolate* isolate = nullptr);
+inline v8::MaybeLocal<v8::Value> ToV8Value(v8::Local<v8::Context> context,
+                                           std::u16string_view str,
                                            v8::Isolate* isolate = nullptr);
 inline v8::MaybeLocal<v8::Value> ToV8Value(v8::Local<v8::Context> context,
                                            v8_inspector::StringView str,
@@ -1026,8 +1040,14 @@ class JSONOutputStream final : public v8::OutputStream {
 // Returns true if OS==Windows and filename ends in .bat or .cmd,
 // case insensitive.
 inline bool IsWindowsBatchFile(const char* filename);
-inline std::wstring ConvertToWideString(const std::string& str, UINT code_page);
+inline std::wstring ConvertUTF8ToWideString(const std::string& str);
+inline std::string ConvertWideStringToUTF8(const std::wstring& wstr);
+
 #endif  // _WIN32
+
+inline std::filesystem::path ConvertUTF8ToPath(const std::string& str);
+inline std::string ConvertPathToUTF8(const std::filesystem::path& path);
+inline std::string ConvertGenericPathToUTF8(const std::filesystem::path& path);
 
 // A helper to create a new instance of the dictionary template.
 // Unlike v8::DictionaryTemplate::NewInstance, this method will

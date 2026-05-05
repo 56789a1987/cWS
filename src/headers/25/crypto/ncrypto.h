@@ -66,7 +66,10 @@ namespace ncrypto {
 #define NCRYPTO_STR(x) #x
 #define NCRYPTO_REQUIRE(EXPR)                                                  \
   {                                                                            \
-    if (!(EXPR) { abort(); }) }
+    if (!(EXPR)) {                                                             \
+      abort();                                                                 \
+    }                                                                          \
+  }
 
 #define NCRYPTO_FAIL(MESSAGE)                                                  \
   do {                                                                         \
@@ -1575,8 +1578,9 @@ int NoPasswordCallback(char* buf, int size, int rwflag, void* u);
 
 int PasswordCallback(char* buf, int size, int rwflag, void* u);
 
-bool SafeX509SubjectAltNamePrint(const BIOPointer& out, X509_EXTENSION* ext);
-bool SafeX509InfoAccessPrint(const BIOPointer& out, X509_EXTENSION* ext);
+bool SafeX509SubjectAltNamePrint(const BIOPointer& out,
+                                 const X509_EXTENSION* ext);
+bool SafeX509InfoAccessPrint(const BIOPointer& out, const X509_EXTENSION* ext);
 
 // ============================================================================
 // SPKAC
