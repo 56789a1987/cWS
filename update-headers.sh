@@ -2,11 +2,20 @@
 
 set -eu
 
+TAR=tar
+if [[ $OSTYPE == 'darwin'* ]]; then
+    TAR=gtar
+    if ! command -v $TAR >/dev/null 2>&1; then
+        echo >&2 "Requires gtar. Use brew install gnu-tar to install it."
+        exit 1
+    fi
+fi
+
 mkdir -p downloads
 rm -rf downloads/headers
 mkdir -p downloads/headers
 
-for version in v20.19.0 v22.21.0 v24.11.0 v25.1.0; do
+for version in v22.21.0 v24.12.0 v25.9.0 v26.0.0; do
     major=$(echo $version | grep -o -E "[0-9]+" | head -n 1)
     headers_dir=downloads/headers/$major
     extract_dir=downloads/node-$version
@@ -18,18 +27,18 @@ for version in v20.19.0 v22.21.0 v24.11.0 v25.1.0; do
 
     echo Extracting node-$version
     if [ $major -ge 24 ]; then
-        tar -xf $tarball_path -C downloads --wildcards "node-$version/src/*.h" \
+        $TAR -xf $tarball_path -C downloads --wildcards "node-$version/src/*.h" \
             "node-$version/deps/v8/include/v8-external-memory-accounter.h" \
             "node-$version/deps/v8/include/v8-fast-api-calls.h" \
             "node-$version/deps/v8/include/v8-inspector.h" \
             "node-$version/deps/ncrypto/ncrypto.h"
     elif [ $major -ge 22 ]; then
-        tar -xf $tarball_path -C downloads --wildcards "node-$version/src/*.h" \
+        $TAR -xf $tarball_path -C downloads --wildcards "node-$version/src/*.h" \
             "node-$version/deps/v8/include/v8-fast-api-calls.h" \
             "node-$version/deps/v8/include/v8-inspector.h" \
             "node-$version/deps/ncrypto/ncrypto.h"
     else
-        tar -xf $tarball_path -C downloads --wildcards "node-$version/src/*.h" \
+        $TAR -xf $tarball_path -C downloads --wildcards "node-$version/src/*.h" \
             "node-$version/deps/v8/include/v8-fast-api-calls.h"
     fi
 

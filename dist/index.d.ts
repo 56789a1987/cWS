@@ -1,5 +1,3 @@
-/// <reference types="node" />
-/// <reference types="node" />
 import * as HTTP from 'http';
 import * as HTTPS from 'https';
 import type { WebSocket } from './client';

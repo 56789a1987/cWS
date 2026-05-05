@@ -15,10 +15,6 @@
 
 * This repository is a fork of [uWebSockets v0.14](https://github.com/uNetworking/uWebSockets/tree/v0.14) therefore has two licence [MIT](https://github.com/ClusterWS/uWS/blob/master/LICENSE) and [ZLIB](https://github.com/ClusterWS/uWS/blob/master/src/LICENSE)
 
-* Due to [a change in libuv](https://github.com/libuv/libuv/pull/3952),
-  if you're running cWS on Linux with Node >= 18.18 or >= 20.3 && < 20.11.1,
-  set the environment variable `UV_USE_IO_URING=0` before starting the application.
-
 ## Supported Node Versions (SSL)
 
 This table is true if you run ssl directly with `cws` (`Node.js`). In case if you use proxy for example `nginx`, `cws` can be run on bigger coverage.

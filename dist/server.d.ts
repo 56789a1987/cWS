@@ -1,6 +1,3 @@
-/// <reference types="node" />
-/// <reference types="node" />
-/// <reference types="node" />
 import * as HTTP from 'http';
 import type { Socket } from 'net';
 import type { WebSocket } from './client';

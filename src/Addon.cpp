@@ -3,7 +3,11 @@
 #include "Addon.h"
 
 void Initialize(Local<Object> exports) {
-  Isolate *isolate = exports->GetIsolate();
+  #if NODE_MAJOR_VERSION >= 26
+    Isolate *isolate = Isolate::GetCurrent();
+  #else
+    Isolate *isolate = exports->GetIsolate();
+  #endif
 
   exports->Set(isolate->GetCurrentContext(), String::NewFromUtf8(isolate, "server").ToLocalChecked(),
               Namespace<cWS::SERVER>(isolate).object);

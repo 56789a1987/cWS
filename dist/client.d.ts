@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { WebSocketServer } from './server';
 import type { SocketAddress, ServerConfigs, SocketClientEvents } from './index';
 export declare const enum WebSocketState {

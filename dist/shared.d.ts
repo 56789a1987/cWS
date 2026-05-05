@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { WebSocketServer } from './server';
 export declare const noop: () => void;
 export declare const OPCODE_TEXT: number;

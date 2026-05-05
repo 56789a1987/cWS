@@ -5,31 +5,33 @@
 #include <uv.h>
 #include <cstring>
 
+#define HAVE_AMARO 1
+#define HAVE_SQLITE 1
 #define HAVE_OPENSSL 1
 #define NODE_WANT_INTERNALS 1
 
-#if NODE_MAJOR_VERSION==20
-  #include "headers/20/tcp_wrap.h"
-  #include "headers/20/crypto/crypto_tls.h"
-  #include "headers/20/base_object-inl.h"
-#endif
-
-#if NODE_MAJOR_VERSION==22
+#if NODE_MAJOR_VERSION == 22
   #include "headers/22/tcp_wrap.h"
   #include "headers/22/crypto/crypto_tls.h"
   #include "headers/22/base_object-inl.h"
 #endif
 
-#if NODE_MAJOR_VERSION==24
+#if NODE_MAJOR_VERSION == 24
   #include "headers/24/tcp_wrap.h"
   #include "headers/24/crypto/crypto_tls.h"
   #include "headers/24/base_object-inl.h"
 #endif
 
-#if NODE_MAJOR_VERSION==25
-#include "headers/25/tcp_wrap.h"
-#include "headers/25/crypto/crypto_tls.h"
-#include "headers/25/base_object-inl.h"
+#if NODE_MAJOR_VERSION == 25
+  #include "headers/25/tcp_wrap.h"
+  #include "headers/25/crypto/crypto_tls.h"
+  #include "headers/25/base_object-inl.h"
+#endif
+
+#if NODE_MAJOR_VERSION == 26
+  #include "headers/26/tcp_wrap.h"
+  #include "headers/26/crypto/crypto_tls.h"
+  #include "headers/26/base_object-inl.h"
 #endif
 
 using BaseObject = node::BaseObject;
@@ -310,7 +312,11 @@ void transfer(const FunctionCallbackInfo<Value> &args) {
     Local<Context> context = isolate->GetCurrentContext();
     Local<Object> arg0 = args[0]->ToObject(context).ToLocalChecked();
     int index = arg0->InternalFieldCount() >= 4 ? 1 : 0;
-    node::TCPWrap *wrap = (node::TCPWrap *)arg0->GetAlignedPointerFromInternalField(index);
+    #if NODE_MAJOR_VERSION >= 26
+      node::TCPWrap *wrap = (node::TCPWrap *)arg0->GetAlignedPointerFromInternalField(index, node::EmbedderDataTag::kDefault);
+    #else
+      node::TCPWrap *wrap = (node::TCPWrap *)arg0->GetAlignedPointerFromInternalField(index);
+    #endif
     handle = wrap->GetHandle();
 
     uv_fileno(handle, (uv_os_fd_t *)&ticket->fd);

@@ -97,7 +97,7 @@ class WebSocket {
         }
     }
 }
+exports.WebSocket = WebSocket;
 WebSocket.OPEN = 1;
 WebSocket.CLOSED = 3;
 WebSocket.Server = server_1.WebSocketServer;
-exports.WebSocket = WebSocket;

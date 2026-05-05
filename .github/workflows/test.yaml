@@ -5,11 +5,9 @@ jobs:
   Linux:
     strategy:
       matrix:
-        node: [20, 22, 24, 25]
+        node: [22, 24, 25, 26]
     name: Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
-    env:
-      UV_USE_IO_URING: 0
     steps:
       - uses: actions/checkout@v2
 
@@ -29,9 +27,10 @@ jobs:
   MacOS:
     strategy:
       matrix:
-        node: [20, 22, 24, 25]
-    name: Node.js ${{ matrix.node }}, MacOS
-    runs-on: macos-latest
+        node: [22, 24, 25, 26]
+        os: [macos-15, macos-15-intel]
+    name: Node.js ${{ matrix.node }}, MacOS ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
@@ -51,7 +50,7 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [20, 22, 24, 25]
+        node: [22, 24, 25, 26]
     name: Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     steps:

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupNative = exports.native = exports.DEFAULT_PAYLOAD_LIMIT = exports.SLIDING_DEFLATE_WINDOW = exports.PERMESSAGE_DEFLATE = exports.APP_PING_CODE = exports.OPCODE_BINARY = exports.OPCODE_PING = exports.OPCODE_TEXT = exports.noop = void 0;
+exports.native = exports.DEFAULT_PAYLOAD_LIMIT = exports.SLIDING_DEFLATE_WINDOW = exports.PERMESSAGE_DEFLATE = exports.APP_PING_CODE = exports.OPCODE_BINARY = exports.OPCODE_PING = exports.OPCODE_TEXT = exports.noop = void 0;
+exports.setupNative = setupNative;
 const client_1 = require("./client");
 const noop = () => { };
 exports.noop = noop;
@@ -13,7 +14,7 @@ exports.SLIDING_DEFLATE_WINDOW = 16;
 exports.DEFAULT_PAYLOAD_LIMIT = 16777216;
 exports.native = (() => {
     try {
-        return require(`../dist/bindings/cws_${process.platform}_${process.versions.modules}`);
+        return require(`../dist/bindings/cws_${process.platform}_${process.arch}_${process.versions.modules}`);
     }
     catch (err) {
         err.message = err.message + ` check './node_modules/@clusterws/cws/build_log.txt' for post install build logs`;
@@ -65,4 +66,3 @@ function setupNative(group, type, wsServer) {
         });
     }
 }
-exports.setupNative = setupNative;

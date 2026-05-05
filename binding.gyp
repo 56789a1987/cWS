@@ -67,7 +67,7 @@
                             'outputs': [
                                 'cws'
                             ],
-                            'action': ['cp', '<@(PRODUCT_DIR)/cws.node', 'dist/bindings/cws_<!@(node -p process.platform)_<!@(node -p process.versions.modules).node']
+                            'action': ['cp', '<@(PRODUCT_DIR)/cws.node', 'dist/bindings/cws_<!@(node -p process.platform)_<!@(node -p process.arch)_<!@(node -p process.versions.modules).node']
                         }
                     ]}
                  ],
@@ -81,7 +81,7 @@
                             'outputs': [
                                 'cws'
                             ],
-                            'action': ['<@(module_root_dir)/copy', '<@(PRODUCT_DIR)/cws.node', 'dist/bindings/cws_<!@(node -p process.platform)_<!@(node -p process.versions.modules).node']
+                            'action': ['<@(module_root_dir)/copy', '<@(PRODUCT_DIR)/cws.node', 'dist/bindings/cws_<!@(node -p process.platform)_<!@(node -p process.arch)_<!@(node -p process.versions.modules).node']
                         }
                     ]}
                  ]
