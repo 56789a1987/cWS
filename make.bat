@@ -2,7 +2,7 @@ REM Fix this path !!!
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" amd64
 
 set v127=v22.21.0
-set v137=v24.12.0
+set v137=v24.15.0
 set v141=v25.9.0
 set v147=v26.0.0
 

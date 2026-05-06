@@ -124,8 +124,6 @@ v8::MaybeLocal<v8::Object> InitializePrivateSymbols(
 
 class NodeArrayBufferAllocator : public ArrayBufferAllocator {
  public:
-  inline uint32_t* zero_fill_field() { return &zero_fill_field_; }
-
   void* Allocate(size_t size) override;  // Defined in src/node.cc
   void* AllocateUninitialized(size_t size) override;
   void Free(void* data, size_t size) override;
@@ -142,7 +140,6 @@ class NodeArrayBufferAllocator : public ArrayBufferAllocator {
   }
 
  private:
-  uint32_t zero_fill_field_ = 1;  // Boolean but exposed as uint32 to JS land.
   std::atomic<size_t> total_mem_usage_ {0};
 
   // Delegate to V8's allocator for compatibility with the V8 memory cage.
@@ -365,8 +362,8 @@ v8::Isolate* NewIsolate(v8::Isolate::CreateParams* params,
                         const IsolateSettings& settings = {});
 // This overload automatically picks the right 'main_script_id' if no callback
 // was provided by the embedder.
-v8::MaybeLocal<v8::Value> StartExecution(Environment* env,
-                                         StartExecutionCallback cb = nullptr);
+v8::MaybeLocal<v8::Value> StartExecution(
+    Environment* env, StartExecutionCallbackWithModule cb = nullptr);
 v8::MaybeLocal<v8::Object> GetPerContextExports(
     v8::Local<v8::Context> context, IsolateData* isolate_data = nullptr);
 void MarkBootstrapComplete(const v8::FunctionCallbackInfo<v8::Value>& args);

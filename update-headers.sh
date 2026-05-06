@@ -15,7 +15,7 @@ mkdir -p downloads
 rm -rf downloads/headers
 mkdir -p downloads/headers
 
-for version in v22.21.0 v24.12.0 v25.9.0 v26.0.0; do
+for version in v22.21.0 v24.15.0 v25.9.0 v26.0.0; do
     major=$(echo $version | grep -o -E "[0-9]+" | head -n 1)
     headers_dir=downloads/headers/$major
     extract_dir=downloads/node-$version

@@ -2,7 +2,7 @@ CPP_SHARED := -DUSE_LIBUV -std=c++20 -O3 -I ./src/headers/$$MAJOR -shared -fPIC 
 CPP_OSX := -stdlib=libc++ -mmacosx-version-min=13.5 -undefined dynamic_lookup
 
 VER_127 := v22.21.0
-VER_137 := v24.12.0
+VER_137 := v24.15.0
 VER_141 := v25.9.0
 VER_147 := v26.0.0
 
