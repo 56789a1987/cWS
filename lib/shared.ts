@@ -12,7 +12,7 @@ export const PERMESSAGE_DEFLATE: number = 1;
 export const SLIDING_DEFLATE_WINDOW: number = 16;
 export const DEFAULT_PAYLOAD_LIMIT: number = 16777216;
 
-export const native: any = ((): NodeRequire => {
+export const native: any = ((): any => {
   try {
     return require(`../dist/bindings/cws_${process.platform}_${process.arch}_${process.versions.modules}`);
   } catch (err) {
