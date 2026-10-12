@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { connect } from 'net';
 import { readFileSync } from 'fs';
 import { connect as tlsConnect } from 'tls';
-import { createServer, Server } from 'http';
+import { createServer, IncomingMessage, Server } from 'http';
 import { createServer as createServerHttps, Server as HttpsServer } from 'https';
 // import { registerHandler } from 'segfault-handler';
 
@@ -119,7 +119,6 @@ const sslTests = process.argv.includes('--ssl') ? ['SSL'] : [];
         });
     });
 
-
     it('Should close connection with correct code & reason (Server)', (done: () => void): void => {
       // wite close logic
       createWSServer(isSSL)
@@ -232,6 +231,46 @@ const sslTests = process.argv.includes('--ssl') ? ['SSL'] : [];
           }
 
           Promise.all(allPassed).then((): void => {
+            wsServer.close((): void => {
+              done();
+            });
+          });
+        });
+    });
+
+    it('Should pause and resume handling messages', (done: () => void): void => {
+      const testMessage: string = `Hello world from cWS ` + Math.random();
+      const PAUSE_TIME: number = 1000;
+      const start: number = performance.now();
+      const time: () => number = () => performance.now() - start;
+
+      createWSServer(isSSL)
+        .then((wsServer: WebSocketServer): void => {
+          wsServer.on('connection', (socket: WebSocket): void => {
+            socket.on('message', (msg: string): void => {
+              expect(msg).to.be.eql(testMessage);
+              expect(time()).to.be.greaterThanOrEqual(PAUSE_TIME);
+              socket.send(msg);
+            });
+
+            socket.pause();
+            expect(socket.isPaused).to.be.eql(true);
+
+            setTimeout((): void => {
+              socket.resume();
+              expect(socket.isPaused).to.be.eql(false);
+            }, PAUSE_TIME);
+          });
+
+          const connection: WebSocket = new WebSocket(connectionUrl);
+
+          connection.on('open', (): void => {
+            connection.send(testMessage);
+          });
+
+          connection.on('message', (msg: string): void => {
+            expect(msg).to.be.eql(testMessage);
+            expect(time()).to.be.greaterThanOrEqual(PAUSE_TIME);
             wsServer.close((): void => {
               done();
             });

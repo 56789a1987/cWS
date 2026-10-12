@@ -488,6 +488,30 @@ void terminateSocket(const FunctionCallbackInfo<Value> &args) {
 }
 
 template <bool isServer>
+void isSocketPaused(const FunctionCallbackInfo<Value> &args) {
+  args.GetReturnValue().Set(Boolean::New(
+      args.GetIsolate(),
+      unwrapSocket<isServer>(args[0].As<External>())->isPaused()));
+}
+
+template <bool isServer>
+void pauseSocket(const FunctionCallbackInfo<Value> &args) {
+  unwrapSocket<isServer>(args[0].As<External>())->pause();
+}
+
+template <bool isServer>
+void resumeSocket(const FunctionCallbackInfo<Value> &args) {
+  unwrapSocket<isServer>(args[0].As<External>())->resume();
+}
+
+template <bool isServer>
+void getBufferedAmount(const FunctionCallbackInfo<Value> &args) {
+  args.GetReturnValue().Set(Integer::NewFromUnsigned(
+      args.GetIsolate(),
+      unwrapSocket<isServer>(args[0].As<External>())->getBufferedAmount()));
+}
+
+template <bool isServer>
 void closeGroup(const FunctionCallbackInfo<Value> &args) {
   NativeString nativeString(args.GetIsolate(), args[2]);
   cWS::Group<isServer> *group =
@@ -606,6 +630,10 @@ struct Namespace {
     NODE_SET_METHOD(object, "send", send<isServer>);
     NODE_SET_METHOD(object, "close", closeSocket<isServer>);
     NODE_SET_METHOD(object, "terminate", terminateSocket<isServer>);
+    NODE_SET_METHOD(object, "isPaused", isSocketPaused<isServer>);
+    NODE_SET_METHOD(object, "pause", pauseSocket<isServer>);
+    NODE_SET_METHOD(object, "resume", resumeSocket<isServer>);
+    NODE_SET_METHOD(object, "getBufferedAmount", getBufferedAmount<isServer>);
     NODE_SET_METHOD(object, "prepareMessage", prepareMessage<isServer>);
     NODE_SET_METHOD(object, "sendPrepared", sendPrepared<isServer>);
     NODE_SET_METHOD(object, "finalizeMessage", finalizeMessage<isServer>);

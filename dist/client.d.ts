@@ -18,6 +18,8 @@ export declare class WebSocket {
     constructor(url: string, options?: any);
     get _socket(): SocketAddress;
     get readyState(): number;
+    get isPaused(): boolean;
+    get bufferedAmount(): number;
     set onopen(listener: () => void);
     set onclose(listener: (code?: number, reason?: string) => void);
     set onerror(listener: (err: Error) => void);
@@ -28,6 +30,8 @@ export declare class WebSocket {
         compress?: boolean;
     }, cb?: (err?: Error) => void): void;
     ping(message?: string | Buffer): void;
+    pause(): void;
+    resume(): void;
     close(code?: number, reason?: string): void;
     terminate(): void;
 }

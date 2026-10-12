@@ -5,6 +5,9 @@
 
 namespace cS {
 
+static const int SOCKET_STATE_SHUTTING_DOWN = 1;
+static const int SOCKET_STATE_PAUSED = 2;
+
 struct TransferData {
     // Connection state
     uv_os_sock_t fd;
@@ -27,8 +30,8 @@ struct WIN32_EXPORT Socket : Poll {
 protected:
     struct {
         int poll : 4;
-        int shuttingDown : 4;
-    } state = {0, false};
+        int flags : 4;
+    } state = {0, 0};
 
     SSL *ssl;
     void *user = nullptr;
@@ -45,10 +48,9 @@ protected:
         };
 
         Message *head = nullptr, *tail = nullptr;
-        void pop()
-        {
-            Message *nextMessage;
-            if ((nextMessage = head->nextMessage)) {
+        void pop() {
+            Message *nextMessage = head->nextMessage;
+            if (nextMessage) {
                 delete [] (char *) head;
                 head = nextMessage;
             } else {
@@ -60,8 +62,7 @@ protected:
         bool empty() {return head == nullptr;}
         Message *front() {return head;}
 
-        void push(Message *message)
-        {
+        void push(Message *message) {
             message->nextMessage = nullptr;
             if (tail) {
                 tail->nextMessage = message;
@@ -82,8 +83,22 @@ protected:
         return poll;
     }
 
+    void setPaused(bool paused) {
+        if (paused) {
+            state.flags |= SOCKET_STATE_PAUSED;
+            changePoll(this, 0);
+        } else {
+            state.flags &= ~SOCKET_STATE_PAUSED;
+            changePoll(this, getPoll());
+        }
+    }
+
     void setShuttingDown(bool shuttingDown) {
-        state.shuttingDown = shuttingDown;
+        if (shuttingDown) {
+            state.flags |= SOCKET_STATE_SHUTTING_DOWN;
+        } else {
+            state.flags &= ~SOCKET_STATE_SHUTTING_DOWN;
+        }
     }
 
     void transfer(NodeData *nodeData, void (*cb)(Poll *)) {
@@ -105,15 +120,15 @@ protected:
         });
     }
 
-    void changePoll(Socket *socket) {
-        if (!threadSafeChange(nodeData->loop, this, socket->getPoll())) {
+    void changePoll(Socket *socket, int poll) {
+        if (!threadSafeChange(nodeData->loop, this, poll)) {
             if (socket->nodeData->tid != pthread_self()) {
                 socket->nodeData->asyncMutex->lock();
                 socket->nodeData->changePollQueue.push_back(socket);
                 socket->nodeData->asyncMutex->unlock();
                 socket->nodeData->async->send();
             } else {
-                change(socket->nodeData->loop, socket, socket->getPoll());
+                change(socket->nodeData->loop, socket, poll);
             }
         }
     }
@@ -316,8 +331,8 @@ protected:
                         break;
                     case SSL_ERROR_WANT_WRITE:
                         if ((getPoll() & UV_WRITABLE) == 0) {
-                            setPoll(getPoll() | UV_WRITABLE);
-                            changePoll(this);
+                            int poll = setPoll(getPoll() | UV_WRITABLE);
+                            changePoll(this, poll);
                         }
                         break;
                     default:
@@ -339,8 +354,8 @@ protected:
                 }
 
                 if ((getPoll() & UV_WRITABLE) == 0) {
-                    setPoll(getPoll() | UV_WRITABLE);
-                    changePoll(this);
+                    int poll = setPoll(getPoll() | UV_WRITABLE);
+                    changePoll(this, poll);
                 }
             }
         }
@@ -441,6 +456,14 @@ public:
 
     Address getAddress();
 
+    size_t getBufferedAmount() {
+        size_t totalLength = 0;
+        for (Queue::Message *message = messageQueue.front(); message; message = message->nextMessage) {
+            totalLength += message->length;
+        }
+        return totalLength;
+    }
+
     void setNoDelay(int enable) {
         setsockopt(getFd(), IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
     }
@@ -457,6 +480,14 @@ public:
             ::send(getFd(), "", 0, MSG_NOSIGNAL);
         }
 #endif
+    }
+
+    void pause() {
+        setPaused(true);
+    }
+
+    void resume() {
+        setPaused(false);
     }
 
     void shutdown() {
@@ -484,8 +515,12 @@ public:
         });
     }
 
+    bool isPaused() {
+        return state.flags & SOCKET_STATE_PAUSED;
+    }
+
     bool isShuttingDown() {
-        return state.shuttingDown;
+        return state.flags & SOCKET_STATE_SHUTTING_DOWN;
     }
 
     friend class Node;

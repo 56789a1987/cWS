@@ -27,7 +27,7 @@ void NodeData::asyncCallback(Async *async)
 
     for (Poll *p : nodeData->changePollQueue) {
         Socket *s = (Socket *) p;
-        s->change(s->nodeData->loop, s, s->getPoll());
+        s->change(s->nodeData->loop, s, s->isPaused() ? 0 : s->getPoll());
     }
 
     nodeData->changePollQueue.clear();

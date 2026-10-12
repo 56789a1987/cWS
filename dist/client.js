@@ -39,6 +39,12 @@ class WebSocket {
     get readyState() {
         return this.external ? 1 : 3;
     }
+    get isPaused() {
+        return this.external ? this.socket.isPaused(this.external) : false;
+    }
+    get bufferedAmount() {
+        return this.external ? this.socket.getBufferedAmount(this.external) : 0;
+    }
     set onopen(listener) {
         this.on('open', listener);
     }
@@ -82,6 +88,16 @@ class WebSocket {
     ping(message) {
         if (this.external) {
             this.socket.send(this.external, message, shared_1.OPCODE_PING);
+        }
+    }
+    pause() {
+        if (this.external) {
+            this.socket.pause(this.external);
+        }
+    }
+    resume() {
+        if (this.external) {
+            this.socket.resume(this.external);
         }
     }
     close(code = 1000, reason) {

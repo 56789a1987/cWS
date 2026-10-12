@@ -52,6 +52,14 @@ export class WebSocket {
     return this.external ? WebSocketState.OPEN : WebSocketState.CLOSED;
   }
 
+  public get isPaused(): boolean {
+    return this.external ? this.socket.isPaused(this.external) : false;
+  }
+
+  public get bufferedAmount(): number {
+    return this.external ? this.socket.getBufferedAmount(this.external) : 0;
+  }
+
   public set onopen(listener: () => void) {
     this.on('open', listener);
   }
@@ -108,6 +116,18 @@ export class WebSocket {
   public ping(message?: string | Buffer): void {
     if (this.external) {
       this.socket.send(this.external, message, OPCODE_PING);
+    }
+  }
+
+  public pause(): void {
+    if (this.external) {
+      this.socket.pause(this.external);
+    }
+  }
+
+  public resume(): void {
+    if (this.external) {
+      this.socket.resume(this.external);
     }
   }
 

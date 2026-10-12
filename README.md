@@ -119,6 +119,14 @@ socket.send(msg, { binary: true });
 socket.send(msg, null, (err) => { });
 ```
 
+To stop or resume emitting events (experimental)
+```js
+// make a socket stop emitting events. some events can still be emitted after this is called, until all buffered data is consumed
+socket.pause();
+// make a paused socket resume emitting events
+socket.resume();
+```
+
 To close connection you can use `close` or `terminate` methods:
 ```js
 // clean close code and reason are optional
