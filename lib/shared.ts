@@ -13,10 +13,18 @@ export const SLIDING_DEFLATE_WINDOW: number = 16;
 export const DEFAULT_PAYLOAD_LIMIT: number = 16777216;
 
 export const native: any = ((): any => {
+  const binding: string = `cws_${process.platform}_${process.arch}_${process.versions.modules}`;
   try {
-    return require(`../dist/bindings/cws_${process.platform}_${process.arch}_${process.versions.modules}`);
+    return require(`../dist/bindings/${binding}`);
   } catch (err) {
-    err.message = err.message + ` check './node_modules/@clusterws/cws/build_log.txt' for post install build logs`;
+    err.message += `\n\nCheck 'build_log.txt' and 'dist/bindings/${binding}.node' in './node_modules/@clusterws/cws', then try:\n`;
+    try {
+      const url: string = require('../package.json').repository.url;
+      err.message += `* Download a prebuilt binary from ${url}/releases and extract it to 'dist/bindings'.\n`;
+    } catch (_err) {
+      noop();
+    }
+    err.message += `* Execute 'npm run build-cpp' in './node_modules/@clusterws/cws' if Windows Build Tools (Windows) or gcc (Linux/MacOS) is installed.`;
     throw err;
   }
 })();

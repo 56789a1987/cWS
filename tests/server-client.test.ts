@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { connect } from 'net';
 import { readFileSync } from 'fs';
 import { connect as tlsConnect } from 'tls';
-import { createServer, IncomingMessage, Server } from 'http';
+import { Server } from 'http';
 import { createServer as createServerHttps, Server as HttpsServer } from 'https';
 // import { registerHandler } from 'segfault-handler';
 
