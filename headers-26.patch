@@ -1,0 +1,12 @@
+diff -ruN a/crypto/crypto_tls.h b/crypto/crypto_tls.h
+--- a/crypto/crypto_tls.h
++++ b/crypto/crypto_tls.h
+@@ -154,7 +154,7 @@
+     return alpn_protos_;
+   }
+ 
+- private:
++ protected:
+   // OpenSSL structures are opaque. Estimate SSL memory size for OpenSSL 1.1.1b:
+   //   SSL: 6224
+   //   SSL->SSL3_STATE: 1040

@@ -27,7 +27,7 @@
     "url": "https://github.com/56789a1987/cWS"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
     "prebuild-install": "^7.1.2"

@@ -15,17 +15,17 @@ mkdir -p downloads
 rm -rf downloads/headers
 mkdir -p downloads/headers
 
-for version in v22.21.0 v24.15.0 v25.9.0 v26.1.0; do
-    major=$(echo $version | grep -o -E "[0-9]+" | head -n 1)
+for version in v22.23.0 v24.22.0 v26.13.0 v27.0.0-alpha.0.0.0; do
+    major=$(echo "$version" | grep -o -E "[0-9]+" | head -n 1)
     headers_dir=downloads/headers/$major
     extract_dir=downloads/node-$version
     tarball_path=downloads/node-$version.tar.xz
     mkdir -p $headers_dir
 
-    echo Downloading node-$version
+    echo "Downloading node-$version"
     wget -c "https://nodejs.org/dist/$version/node-$version.tar.xz" -P downloads
 
-    echo Extracting node-$version
+    echo "Extracting node-$version"
     if [ $major -ge 24 ]; then
         $TAR -xf $tarball_path -C downloads --wildcards "node-$version/src/*.h" \
             "node-$version/deps/v8/include/v8-external-memory-accounter.h" \
@@ -42,7 +42,7 @@ for version in v22.21.0 v24.15.0 v25.9.0 v26.1.0; do
             "node-$version/deps/v8/include/v8-fast-api-calls.h"
     fi
 
-    echo Getting header files for node-$version
+    echo "Getting header files for node-$version"
     cp $extract_dir/src/*.h $headers_dir
     cp $extract_dir/deps/v8/include/*.h $headers_dir
 
@@ -56,14 +56,20 @@ for version in v22.21.0 v24.15.0 v25.9.0 v26.1.0; do
         cp $extract_dir/deps/ncrypto/*.h $headers_dir/crypto
     fi
 
-    if [ $major -ge 25 ]; then
+    if [ $major -ge 24 ]; then
         cp -r $extract_dir/src/quic $headers_dir/quic
     fi
 
-    echo Patching header files for node-$version
-    patch -Ntp1 --no-backup-if-mismatch -d $headers_dir < headers.patch
+    echo "Patching header files for node-$version"
+    if [ $major -ge 27 ]; then
+        patch -Ntp1 --no-backup-if-mismatch -d $headers_dir < headers-27.patch
+    elif [ $major -ge 26 ]; then
+        patch -Ntp1 --no-backup-if-mismatch -d $headers_dir < headers-26.patch
+    else
+        patch -Ntp1 --no-backup-if-mismatch -d $headers_dir < headers.patch
+    fi
 done
 
-echo Moving header files to src
+echo "Moving header files to src"
 rm -rf src/headers
 mv downloads/headers src/headers

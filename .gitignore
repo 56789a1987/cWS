@@ -7,7 +7,9 @@ excludes/
 downloads/
 node_modules/
 
-*.node
+dist/bindings/*.node
+!dist/bindings/cws_win32_*.node
+
 build_log.txt
 crash_log.txt
 package-lock.json

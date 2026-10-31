@@ -1,4 +1,4 @@
-diff -ur a/crypto/crypto_tls.h b/crypto/crypto_tls.h
+diff -ruN a/crypto/crypto_tls.h b/crypto/crypto_tls.h
 --- a/crypto/crypto_tls.h
 +++ b/crypto/crypto_tls.h
 @@ -103,7 +103,7 @@

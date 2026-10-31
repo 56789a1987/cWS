@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24, 25, 26]
+        node: [22, 24, 26, 27]
     name: Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
     steps:
@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24, 25, 26]
+        node: [22, 24, 26, 27]
         os: [macos-15, macos-15-intel]
     name: Node.js ${{ matrix.node }}, MacOS ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -53,7 +53,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24, 25, 26]
+        node: [22, 24, 26, 27]
     name: Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
     steps:

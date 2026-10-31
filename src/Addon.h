@@ -6,6 +6,7 @@
 #include <cstring>
 
 #define HAVE_AMARO 1
+#define HAVE_FFI 1
 #define HAVE_SQLITE 1
 #define HAVE_OPENSSL 1
 #define NODE_WANT_INTERNALS 1
@@ -22,16 +23,37 @@
   #include "headers/24/base_object-inl.h"
 #endif
 
-#if NODE_MAJOR_VERSION == 25
-  #include "headers/25/tcp_wrap.h"
-  #include "headers/25/crypto/crypto_tls.h"
-  #include "headers/25/base_object-inl.h"
-#endif
-
 #if NODE_MAJOR_VERSION == 26
   #include "headers/26/tcp_wrap.h"
   #include "headers/26/crypto/crypto_tls.h"
   #include "headers/26/base_object-inl.h"
+#endif
+
+#if NODE_MAJOR_VERSION == 27
+  #include "headers/27/tcp_wrap.h"
+  #include "headers/27/crypto/crypto_tls.h"
+  #include "headers/27/base_object-inl.h"
+#endif
+
+using namespace std;
+using namespace v8;
+
+#if NODE_MAJOR_VERSION >= 27
+  inline Local<External> newExternal(Isolate *isolate, void *value) {
+    return External::New(isolate, value, kExternalPointerTypeTagDefault);
+  }
+
+  inline void* getExternal(const Local<Value> &value) {
+    return value.As<External>()->Value(kExternalPointerTypeTagDefault);
+  }
+#else
+  inline Local<External> newExternal(Isolate *isolate, void *value) {
+    return External::New(isolate, value);
+  }
+
+  inline void* getExternal(const Local<Value> &value) {
+    return value.As<External>()->Value();
+  }
 #endif
 
 using BaseObject = node::BaseObject;
@@ -46,7 +68,7 @@ public:
             return;
         }
         SSL* ptr = ssl_.get();
-        v8::Local<v8::External> ext = v8::External::New(isolate, ptr);
+        v8::Local<v8::External> ext = newExternal(isolate, ptr);
         info.GetReturnValue().Set(ext);
     }
 };
@@ -65,9 +87,6 @@ public:
 #endif
 
 #undef NODE_WANT_INTERNALS
-
-using namespace std;
-using namespace v8;
 
 cWS::Hub hub(0, true);
 uv_check_t check;
@@ -144,13 +163,12 @@ void createGroup(const FunctionCallbackInfo<Value> &args) {
   cWS::Group<isServer> *group = hub.createGroup<isServer>(
       args[0].As<Integer>()->Value(), args[1].As<Integer>()->Value());
   group->setUserData(new GroupData);
-  args.GetReturnValue().Set(External::New(args.GetIsolate(), group));
+  args.GetReturnValue().Set(newExternal(args.GetIsolate(), group));
 }
 
 template <bool isServer>
 void deleteGroup(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   delete (GroupData *)group->getUserData();
   delete group;
 }
@@ -158,12 +176,16 @@ void deleteGroup(const FunctionCallbackInfo<Value> &args) {
 template <bool isServer>
 inline Local<External> wrapSocket(cWS::WebSocket<isServer> *webSocket,
                                   Isolate *isolate) {
-  return External::New(isolate, webSocket);
+  return newExternal(isolate, webSocket);
 }
 
 template <bool isServer>
 inline cWS::WebSocket<isServer> *unwrapSocket(Local<External> external) {
-  return (cWS::WebSocket<isServer> *)external->Value();
+  #if NODE_MAJOR_VERSION >= 27
+    return (cWS::WebSocket<isServer> *)external->Value(kExternalPointerTypeTagDefault);
+  #else
+    return (cWS::WebSocket<isServer> *)external->Value();
+  #endif
 }
 
 inline Local<Value> wrapMessage(const char *message, size_t length,
@@ -268,8 +290,7 @@ void send(const FunctionCallbackInfo<Value> &args) {
 }
 
 void connect(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<cWS::CLIENT> *clientGroup =
-      (cWS::Group<cWS::CLIENT> *)args[0].As<External>()->Value();
+  cWS::Group<cWS::CLIENT> *clientGroup = (cWS::Group<cWS::CLIENT> *)getExternal(args[0]);
   NativeString uri(args.GetIsolate(), args[1]);
   hub.connect(std::string(uri.getData(), uri.getLength()),
               new Persistent<Value>(args.GetIsolate(), args[2]), {}, 5000,
@@ -282,9 +303,8 @@ struct Ticket {
 };
 
 void upgrade(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<cWS::SERVER> *serverGroup =
-      (cWS::Group<cWS::SERVER> *)args[0].As<External>()->Value();
-  Ticket *ticket = (Ticket *)args[1].As<External>()->Value();
+  cWS::Group<cWS::SERVER> *serverGroup = (cWS::Group<cWS::SERVER> *)getExternal(args[0]);
+  Ticket *ticket = (Ticket *)getExternal(args[1]);
   Isolate *isolate = args.GetIsolate();
   NativeString secKey(isolate, args[2]);
   NativeString extensions(isolate, args[3]);
@@ -327,7 +347,7 @@ void transfer(const FunctionCallbackInfo<Value> &args) {
   ticket->fd = dup(ticket->fd);
   ticket->ssl = nullptr;
   if (args[1]->IsExternal()) {
-    ticket->ssl = (SSL *)args[1].As<External>()->Value();
+    ticket->ssl = (SSL *)getExternal(args[1]);
     SSL_up_ref(ticket->ssl);
   }
 
@@ -337,13 +357,12 @@ void transfer(const FunctionCallbackInfo<Value> &args) {
     handle->flags |= 0x40000000;
   }
 
-  args.GetReturnValue().Set(External::New(args.GetIsolate(), ticket));
+  args.GetReturnValue().Set(newExternal(args.GetIsolate(), ticket));
 }
 
 template <bool isServer>
 void onConnection(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   GroupData *groupData = (GroupData *)group->getUserData();
 
   Isolate *isolate = args.GetIsolate();
@@ -363,8 +382,7 @@ void onConnection(const FunctionCallbackInfo<Value> &args) {
 
 template <bool isServer>
 void onMessage(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   GroupData *groupData = (GroupData *)group->getUserData();
 
   Isolate *isolate = args.GetIsolate();
@@ -389,8 +407,7 @@ void onMessage(const FunctionCallbackInfo<Value> &args) {
 
 template <bool isServer>
 void onPing(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   GroupData *groupData = (GroupData *)group->getUserData();
 
   Isolate *isolate = args.GetIsolate();
@@ -409,8 +426,7 @@ void onPing(const FunctionCallbackInfo<Value> &args) {
 
 template <bool isServer>
 void onPong(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   GroupData *groupData = (GroupData *)group->getUserData();
 
   Isolate *isolate = args.GetIsolate();
@@ -429,8 +445,7 @@ void onPong(const FunctionCallbackInfo<Value> &args) {
 
 template <bool isServer>
 void onDisconnection(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   GroupData *groupData = (GroupData *)group->getUserData();
 
   Isolate *isolate = args.GetIsolate();
@@ -454,8 +469,7 @@ void onDisconnection(const FunctionCallbackInfo<Value> &args) {
 }
 
 void onError(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<cWS::CLIENT> *group =
-      (cWS::Group<cWS::CLIENT> *)args[0].As<External>()->Value();
+  cWS::Group<cWS::CLIENT> *group = (cWS::Group<cWS::CLIENT> *)getExternal(args[0]);
   GroupData *groupData = (GroupData *)group->getUserData();
 
   Isolate *isolate = args.GetIsolate();
@@ -514,21 +528,19 @@ void getBufferedAmount(const FunctionCallbackInfo<Value> &args) {
 template <bool isServer>
 void closeGroup(const FunctionCallbackInfo<Value> &args) {
   NativeString nativeString(args.GetIsolate(), args[2]);
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   group->close(args[1].As<Integer>()->Value(), nativeString.getData(),
                nativeString.getLength());
 }
 
 template <bool isServer>
 void terminateGroup(const FunctionCallbackInfo<Value> &args) {
-  ((cWS::Group<isServer> *)args[0].As<External>()->Value())->terminate();
+  ((cWS::Group<isServer> *)getExternal(args[0]))->terminate();
 }
 
 template <bool isServer>
 void broadcast(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<isServer> *group =
-      (cWS::Group<isServer> *)args[0].As<External>()->Value();
+  cWS::Group<isServer> *group = (cWS::Group<isServer> *)getExternal(args[0]);
   cWS::OpCode opCode =
       args[2].As<Boolean>()->Value() ? cWS::OpCode::BINARY : cWS::OpCode::TEXT;
   NativeString nativeString(args.GetIsolate(), args[1]);
@@ -539,7 +551,7 @@ template <bool isServer>
 void prepareMessage(const FunctionCallbackInfo<Value> &args) {
   cWS::OpCode opCode = (cWS::OpCode)args[1].As<Integer>()->Value();
   NativeString nativeString(args.GetIsolate(), args[0]);
-  args.GetReturnValue().Set(External::New(
+  args.GetReturnValue().Set(newExternal(
       args.GetIsolate(),
       cWS::WebSocket<isServer>::prepareMessage(
           nativeString.getData(), nativeString.getLength(), opCode, false)));
@@ -548,24 +560,17 @@ void prepareMessage(const FunctionCallbackInfo<Value> &args) {
 template <bool isServer>
 void sendPrepared(const FunctionCallbackInfo<Value> &args) {
   unwrapSocket<isServer>(args[0].As<External>())
-      ->sendPrepared(
-          (typename cWS::WebSocket<isServer>::PreparedMessage *)args[1]
-              .As<External>()
-              ->Value());
+      ->sendPrepared((typename cWS::WebSocket<isServer>::PreparedMessage *)getExternal(args[1]));
 }
 
 template <bool isServer>
 void finalizeMessage(const FunctionCallbackInfo<Value> &args) {
-  cWS::WebSocket<isServer>::finalizeMessage(
-      (typename cWS::WebSocket<isServer>::PreparedMessage *)args[0]
-          .As<External>()
-          ->Value());
+  cWS::WebSocket<isServer>::finalizeMessage((typename cWS::WebSocket<isServer>::PreparedMessage *)getExternal(args[0]));
 }
 
 void forEach(const FunctionCallbackInfo<Value> &args) {
   Isolate *isolate = args.GetIsolate();
-  cWS::Group<cWS::SERVER> *group =
-      (cWS::Group<cWS::SERVER> *)args[0].As<External>()->Value();
+  cWS::Group<cWS::SERVER> *group = (cWS::Group<cWS::SERVER> *)getExternal(args[0]);
   Local<Function> cb = Local<Function>::Cast(args[1]);
   Local<Context> context = isolate->GetCurrentContext();
 
@@ -576,15 +581,13 @@ void forEach(const FunctionCallbackInfo<Value> &args) {
 }
 
 void getSize(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<cWS::SERVER> *group =
-      (cWS::Group<cWS::SERVER> *)args[0].As<External>()->Value();
+  cWS::Group<cWS::SERVER> *group = (cWS::Group<cWS::SERVER> *)getExternal(args[0]);
   GroupData *groupData = (GroupData *)group->getUserData();
   args.GetReturnValue().Set(Integer::New(args.GetIsolate(), groupData->size));
 }
 
 void startAutoPing(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<cWS::SERVER> *group =
-      (cWS::Group<cWS::SERVER> *)args[0].As<External>()->Value();
+  cWS::Group<cWS::SERVER> *group = (cWS::Group<cWS::SERVER> *)getExternal(args[0]);
 
   NativeString nativeString(args.GetIsolate(), args[2]);
 
@@ -617,8 +620,7 @@ void setNoop(const FunctionCallbackInfo<Value> &args) {
 }
 
 void listen(const FunctionCallbackInfo<Value> &args) {
-  cWS::Group<cWS::SERVER> *group =
-      (cWS::Group<cWS::SERVER> *)args[0].As<External>()->Value();
+  cWS::Group<cWS::SERVER> *group = (cWS::Group<cWS::SERVER> *)getExternal(args[0]);
   hub.listen(args[1].As<Integer>()->Value(), nullptr, 0, group);
 }
 

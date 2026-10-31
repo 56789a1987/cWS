@@ -16,7 +16,7 @@ jobs:
   Linux:
     strategy:
       matrix:
-        node: [22, 24, 25, 26]
+        node: [22, 24, 26]
         tag: ["v4.11.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Linux
     runs-on: ubuntu-latest
@@ -42,7 +42,12 @@ jobs:
         id: tarball
         run: ./tarball.sh
 
-      - name: Upload
+      - uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.tarball.outputs.asset_name }}
+          archive: false
+
+      - name: Upload release
         uses: actions/github-script@0.9.0
         with:
           script: |
@@ -75,7 +80,7 @@ jobs:
   MacOS:
     strategy:
       matrix:
-        node: [22, 24, 25, 26]
+        node: [22, 24, 26]
         os: [macos-15, macos-15-intel]
         tag: ["v4.11.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, MacOS ${{ matrix.os }}
@@ -102,7 +107,12 @@ jobs:
         id: tarball
         run: ./tarball.sh
 
-      - name: Upload
+      - uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.tarball.outputs.asset_name }}
+          archive: false
+
+      - name: Upload release
         uses: actions/github-script@0.9.0
         with:
           script: |
@@ -135,7 +145,7 @@ jobs:
   Win:
     strategy:
       matrix:
-        node: [22, 24, 25, 26]
+        node: [22, 24, 26]
         tag: ["v4.11.0"]
     name: ${{ matrix.tag }}, Node.js ${{ matrix.node }}, Windows
     runs-on: windows-latest
@@ -166,8 +176,13 @@ jobs:
         id: tarball
         shell: msys2 {0}
         run: ./tarball.sh
+      
+      - uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.tarball.outputs.asset_name }}
+          archive: false
 
-      - name: Upload
+      - name: Upload release
         uses: actions/github-script@0.9.0
         with:
           script: |
