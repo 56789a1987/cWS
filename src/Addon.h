@@ -38,7 +38,7 @@
 using namespace std;
 using namespace v8;
 
-#if NODE_MAJOR_VERSION >= 27
+#if NODE_MAJOR_VERSION >= 26
   inline Local<External> newExternal(Isolate *isolate, void *value) {
     return External::New(isolate, value, kExternalPointerTypeTagDefault);
   }
