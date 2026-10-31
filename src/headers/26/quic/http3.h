@@ -3,6 +3,7 @@
 #if defined(NODE_WANT_INTERNALS) && NODE_WANT_INTERNALS
 
 #include <memory>
+#include "application.h"
 #include "session.h"
 
 namespace node::quic {
