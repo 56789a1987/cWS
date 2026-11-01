@@ -21,8 +21,8 @@ diff -ruN a/util-inl.h b/util-inl.h
  template <V8Type T, size_t kStackStorageSize>
  void MaybeStackBuffer<T, kStackStorageSize>::AllocateSufficientStorage(
      size_t storage) {
-@@ -587,6 +587,7 @@
-
+@@ -587,6 +588,7 @@
+ 
    length_ = storage;
  }
 +#endif
