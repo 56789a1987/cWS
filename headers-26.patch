@@ -10,3 +10,22 @@ diff -ruN a/crypto/crypto_tls.h b/crypto/crypto_tls.h
    // OpenSSL structures are opaque. Estimate SSL memory size for OpenSSL 1.1.1b:
    //   SSL: 6224
    //   SSL->SSL3_STATE: 1040
+diff -ruN a/util-inl.h b/util-inl.h
+--- a/util-inl.h
++++ b/util-inl.h
+@@ -550,6 +550,7 @@
+   length_ = storage;
+ }
+ 
++#if !defined(_MSC_VER)
+ template <V8Type T, size_t kStackStorageSize>
+ void MaybeStackBuffer<T, kStackStorageSize>::AllocateSufficientStorage(
+     size_t storage) {
+@@ -570,6 +570,7 @@
+
+   length_ = storage;
+ }
++#endif
+ 
+ template <typename T, size_t S>
+   requires(sizeof(T) == 1)

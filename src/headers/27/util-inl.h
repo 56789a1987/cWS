@@ -567,6 +567,7 @@ void MaybeStackBuffer<T, kStackStorageSize>::AllocateSufficientStorage(
   length_ = storage;
 }
 
+#if !defined(_MSC_VER)
 template <V8Type T, size_t kStackStorageSize>
 void MaybeStackBuffer<T, kStackStorageSize>::AllocateSufficientStorage(
     size_t storage) {
@@ -587,6 +588,7 @@ void MaybeStackBuffer<T, kStackStorageSize>::AllocateSufficientStorage(
 
   length_ = storage;
 }
+#endif
 
 template <typename T, size_t S>
   requires(sizeof(T) == 1)
