@@ -8,7 +8,7 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\VC\Auxiliary\
 set v127=v22.23.0
 set v137=v24.22.0
 set v147=v26.13.0
-set v153=v27.0.0-alpha.0.0.0
+set v153=v27.0.0-alpha.0.1.0
 
 goto :main
 

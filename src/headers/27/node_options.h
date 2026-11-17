@@ -112,6 +112,14 @@ class DebugOptions : public Options {
     return break_first_line || break_node_first_line;
   }
 
+  const char* inspector_option_name() const {
+    if (break_node_first_line) return "--inspect-brk-node";
+    if (break_first_line) return "--inspect-brk";
+    if (inspect_wait) return "--inspect-wait";
+    if (inspector_enabled) return "--inspect";
+    return nullptr;
+  }
+
   void CheckOptions(std::vector<std::string>* errors,
                     std::vector<std::string>* argv) override;
 };
@@ -217,7 +225,7 @@ class EnvironmentOptions : public Options {
   DEFINE_BOOL_FIELD(experimental_stream_iter) = EXPERIMENTALS_DEFAULT_VALUE;
   DEFINE_BOOL_FIELD(experimental_vfs) = true;
   DEFINE_BOOL_FIELD(vfs_load) = false;
-  DEFINE_BOOL_FIELD(sea_vfs_archive) = false;
+  DEFINE_BOOL_FIELD(sea_vfs) = false;
   DEFINE_BOOL_FIELD(webstorage) = HAVE_SQLITE;
   DEFINE_BOOL_FIELD(experimental_dtls) = EXPERIMENTALS_DEFAULT_VALUE;
   DEFINE_BOOL_FIELD(experimental_quic) = EXPERIMENTALS_DEFAULT_VALUE;

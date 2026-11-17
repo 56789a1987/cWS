@@ -52,6 +52,10 @@ class SecureContext final : public BaseObject {
   static SecureContext* Create(Environment* env);
 
   const ncrypto::SSLCtxPointer& ctx() const { return ctx_; }
+  // True if CA certificates were added with addCACert(), as opposed to the
+  // context relying on the default root store.
+  bool has_own_ca() const { return has_own_ca_; }
+  const std::string& session_id_context() const { return session_id_context_; }
 
   // Non-const ctx() that allows for non-default initialization of
   // the SecureContext.
@@ -153,15 +157,6 @@ class SecureContext final : public BaseObject {
   template <bool primary>
   static void GetCertificate(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Test-only hooks for the SPKI blocklist that every SSL_CTX applies
-  // during certificate verification. Reachable through
-  // internalBinding('crypto') with --expose-internals. The argument is the
-  // SHA-256 of a DER-encoded SubjectPublicKeyInfo.
-  static void AddBlockedSPKIForTesting(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ClearBlockedSPKIsForTesting(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
   static int TicketKeyCallback(SSL* ssl,
                                unsigned char* name,
                                unsigned char* iv,
@@ -170,6 +165,8 @@ class SecureContext final : public BaseObject {
                                EVP_MAC_CTX* hctx,
 #elif NCRYPTO_USE_BORINGSSL
                                HMAC_CTX* hctx,
+#else
+#error "Unsupported crypto backend"
 #endif
                                int enc);
 
@@ -181,6 +178,8 @@ class SecureContext final : public BaseObject {
                                          EVP_MAC_CTX* hctx,
 #elif NCRYPTO_USE_BORINGSSL
                                          HMAC_CTX* hctx,
+#else
+#error "Unsupported crypto backend"
 #endif
                                          int enc);
 
@@ -193,6 +192,8 @@ class SecureContext final : public BaseObject {
   ncrypto::X509Pointer issuer_;
   // Non-owning cache for SSL_CTX_get_cert_store(ctx_.get())
   X509_STORE* own_cert_store_cache_ = nullptr;
+  bool has_own_ca_ = false;
+  std::string session_id_context_;
 
   unsigned char ticket_key_name_[16];
   unsigned char ticket_key_aes_[16];
