@@ -181,7 +181,7 @@ inline Local<External> wrapSocket(cWS::WebSocket<isServer> *webSocket,
 
 template <bool isServer>
 inline cWS::WebSocket<isServer> *unwrapSocket(Local<External> external) {
-  #if NODE_MAJOR_VERSION >= 27
+  #if NODE_MAJOR_VERSION >= 26
     return (cWS::WebSocket<isServer> *)external->Value(kExternalPointerTypeTagDefault);
   #else
     return (cWS::WebSocket<isServer> *)external->Value();
